@@ -1,0 +1,11 @@
+https://craftinginterpreters.com/introduction.html
+
+* impls
+https://github.com/munificent/craftinginterpreters/wiki/Lox-implementations
+
+** golang:
+https://github.com/nanmu42/bluelox
+https://lox.nanmu.me/en/
+
+https://github.com/chidiwilliams/glox
+https://github.com/jfourkiotis/golox
