@@ -1,10 +1,10 @@
 package token
 
-type tokenType int
+type Type int
 
 const (
 	// Single-character tokens.
-	LeftParen = tokenType(iota)
+	LeftParen = Type(iota)
 	RightParen
 	LeftBrace
 	RightBrace
@@ -51,7 +51,7 @@ const (
 	// While
 )
 
-func (t tokenType) toString() string {
+func (t Type) String() string {
 	switch t {
 	case LeftParen:
 		return "("
