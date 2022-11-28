@@ -18,7 +18,7 @@ const (
 
 	// One or two character tokens.
 	Bang
-	Bang_equal
+	BangEqual
 	Equal
 	EqualEqual
 	Greater
@@ -28,7 +28,7 @@ const (
 
 	// // Literals.
 	// Identifier
-	// String
+	String
 	// Number
 
 	// // Keywords.
@@ -51,6 +51,7 @@ const (
 	// While
 )
 
+// Do we need this method?
 func (t Type) String() string {
 	switch t {
 	case LeftParen:
@@ -77,7 +78,7 @@ func (t Type) String() string {
 		return "*"
 	case Bang:
 		return "!"
-	case Bang_equal:
+	case BangEqual:
 		return "!="
 	case Equal:
 		return "="
@@ -93,8 +94,11 @@ func (t Type) String() string {
 		return "<="
 	// case Identifier:
 	// return "="
-	// case String:
-	// 	return ""
+
+	case String:
+		// TODO: what is this?
+		return "some string"
+
 	// case Number:
 	// 	return ""
 	// case And:

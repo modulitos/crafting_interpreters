@@ -49,11 +49,50 @@ func TestScanner_ScanTokens(t *testing.T) {
 			},
 		},
 		{
-			name:       "unexpected characters",
-			source:     "(+)^ {.}^",
-			wantErr:    fmt.Errorf("Unexpected character: ^ on line: 1\nUnexpected character: ^ on line: 1\n"),
+			name:       "multiple unexpected characters",
+			source:     "(+)^ \n {.}^",
+			wantErr:    fmt.Errorf("Unexpected character: ^ on line: 1\nUnexpected character: ^ on line: 2\n"),
 			wantTokens: nil,
 		},
+		{
+			name:    "multi-byte operators",
+			source:  "<= == != !",
+			wantErr: nil,
+			wantTokens: []*token.Token{
+				simpleToken(token.LessEqual, 1),
+				simpleToken(token.EqualEqual, 1),
+				simpleToken(token.BangEqual, 1),
+				simpleToken(token.Bang, 1),
+				token.NewEofToken(1),
+			},
+		},
+		{
+			name:    "comment",
+			source:  "!\n!!// this is a comment \n() // some other comment",
+			wantErr: nil,
+			wantTokens: []*token.Token{
+				simpleToken(token.Bang, 1),
+				simpleToken(token.Bang, 2),
+				simpleToken(token.Bang, 2),
+				simpleToken(token.LeftParen, 3),
+				simpleToken(token.RightParen, 3),
+				token.NewEofToken(3),
+			},
+		},
+		// {
+		// 	name:    "string",
+		// 	source:  "\"hello world\"",
+		// 	wantErr: nil,
+		// 	wantTokens: []*token.Token{
+		// 		&token.Token{
+		// 			TokenType: token.String,
+		// 			Lexeme:    `""`,
+		// 			Literal:   &"",
+		// 			Line:      1,
+		// 		},
+		// 		token.NewEofToken(1),
+		// 	},
+		// },
 	}
 
 	for _, tc := range tests {

@@ -35,31 +35,24 @@ func NewScanner(source []byte) scanner {
 	}
 }
 
-func (s *scanner) isAtEnd() bool {
-	return s.current >= len(s.source)
-}
+func (s *scanner) ScanTokens() ([]*token.Token, error) {
+	for !s.isAtEnd() {
+		// We are at the beginning of the next lexeme.
+		s.start = s.current
+		s.scanToken()
+	}
 
-func (s *scanner) advance() byte {
-	c := s.source[s.current]
-	s.current++
-	return c
-}
+	s.tokens = append(s.tokens, token.NewEofToken(s.line))
 
-func (s *scanner) addToken(t *token.Type, literal *string) {
-	// Using an intermediate variable, because otherwise we can't take the
-	// address of a string? https://github.com/golang/go/issues/6031
-	str := string(s.source[s.start:s.current])
-	s.tokens = append(s.tokens,
-		&token.Token{
-			TokenType: *t,
-			Lexeme:    &str,
-			Line:      s.line,
-			Literal:   literal,
-		})
-}
-
-func (s *scanner) addSimpleToken(t token.Type) {
-	s.addToken(&t, nil)
+	if len(s.errors) > 0 {
+		builder := strings.Builder{}
+		for _, err := range s.errors {
+			builder.WriteString(fmt.Sprintf("%v\n", err.Error()))
+		}
+		return nil, errors.New(builder.String())
+	} else {
+		return s.tokens, nil
+	}
 }
 
 func (s *scanner) scanToken() {
@@ -68,6 +61,9 @@ func (s *scanner) scanToken() {
 		switch c {
 		case ' ', '\r', '\t':
 			// do nothing on whitespace chars
+			return
+		case '\n':
+			s.line++
 			return
 		case '(':
 			s.addSimpleToken(token.LeftParen)
@@ -97,17 +93,49 @@ func (s *scanner) scanToken() {
 			s.addSimpleToken(token.Semicolon)
 			return
 		case '/':
-			// TODO: handle comments
-			s.addSimpleToken(token.Slash)
+			if s.match('/') {
+				// Consume all chars until end of line.
+				for s.peek() != '\n' && !s.isAtEnd() {
+					s.advance()
+				}
+				// Comments as lexemes are ignored.
+			} else {
+				s.addSimpleToken(token.Slash)
+			}
 			return
 		case '*':
 			s.addSimpleToken(token.Star)
 			return
 		case '!':
-			s.addSimpleToken(token.Bang)
+			if s.match('=') {
+				s.addSimpleToken(token.BangEqual)
+			} else {
+				s.addSimpleToken(token.Bang)
+			}
+			return
+		case '>':
+			if s.match('=') {
+				s.addSimpleToken(token.GreaterEqual)
+			} else {
+				s.addSimpleToken(token.Greater)
+			}
+			return
+		case '<':
+			if s.match('=') {
+				s.addSimpleToken(token.LessEqual)
+			} else {
+				s.addSimpleToken(token.Less)
+			}
 			return
 		case '=':
-			s.addSimpleToken(token.Equal)
+			if s.match('=') {
+				s.addSimpleToken(token.EqualEqual)
+			} else {
+				s.addSimpleToken(token.Equal)
+			}
+			return
+		case '"':
+			s.string()
 			return
 		default:
 			s.errors = append(s.errors, fmt.Errorf("Unexpected character: %c on line: %d", c, s.line))
@@ -116,22 +144,70 @@ func (s *scanner) scanToken() {
 	}
 }
 
-func (s *scanner) ScanTokens() ([]*token.Token, error) {
-	for !s.isAtEnd() {
-		// We are at the beginning of the next lexeme.
-		s.start = s.current
-		s.scanToken()
-	}
+func (s *scanner) isAtEnd() bool {
+	return s.current >= len(s.source)
+}
 
-	s.tokens = append(s.tokens, token.NewEofToken(s.line))
+func (s *scanner) advance() byte {
+	c := s.source[s.current]
+	s.current++
+	return c
+}
 
-	if len(s.errors) > 0 {
-		builder := strings.Builder{}
-		for _, err := range s.errors {
-			builder.WriteString(fmt.Sprintf("%v\n", err.Error()))
-		}
-		return nil, errors.New(builder.String())
+func (s *scanner) addToken(t *token.Type, literal *string) {
+	// Using an intermediate variable, because otherwise we can't take the
+	// address of a string? https://github.com/golang/go/issues/6031
+	str := string(s.source[s.start:s.current])
+	s.tokens = append(s.tokens,
+		&token.Token{
+			TokenType: *t,
+			Lexeme:    &str,
+			Line:      s.line,
+			Literal:   literal,
+		})
+}
+
+func (s *scanner) addSimpleToken(t token.Type) {
+	s.addToken(&t, nil)
+}
+
+func (s *scanner) match(expected byte) bool {
+	if s.isAtEnd() {
+		return false
+	} else if s.source[s.current] != expected {
+		return false
 	} else {
-		return s.tokens, nil
+		s.current++
+		return true
 	}
+}
+
+func (s *scanner) peek() byte {
+	if s.isAtEnd() {
+		// TODO: Consider using a rune here instead?
+		//
+		// byte is basically a u8. So we return 0, which is the default byte:
+		return 0
+	} else {
+		return s.source[s.current]
+	}
+}
+
+func (s *scanner) string() (err error) {
+	for s.peek() != '"' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.advance()
+		}
+	}
+
+	if s.isAtEnd() {
+		err = fmt.Errorf("Unterminated string at line: %d", s.line)
+		return
+	}
+
+	s.advance()
+	substring := string(s.source[s.start+1 : s.current-1])
+	tokenType := token.String
+	s.addToken(&tokenType, &substring)
+	return
 }
