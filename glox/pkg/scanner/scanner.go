@@ -154,21 +154,18 @@ func (s *scanner) advance() byte {
 	return c
 }
 
-func (s *scanner) addToken(t *token.Type, literal *string) {
-	// Using an intermediate variable, because otherwise we can't take the
-	// address of a string? https://github.com/golang/go/issues/6031
-	str := string(s.source[s.start:s.current])
+func (s *scanner) addToken(t token.Type, literal string) {
 	s.tokens = append(s.tokens,
 		&token.Token{
-			TokenType: *t,
-			Lexeme:    &str,
+			TokenType: t,
+			Lexeme:    string(s.source[s.start:s.current]),
 			Line:      s.line,
 			Literal:   literal,
 		})
 }
 
 func (s *scanner) addSimpleToken(t token.Type) {
-	s.addToken(&t, nil)
+	s.addToken(t, "")
 }
 
 func (s *scanner) match(expected byte) bool {
@@ -196,6 +193,8 @@ func (s *scanner) peek() byte {
 func (s *scanner) string() (err error) {
 	for s.peek() != '"' && !s.isAtEnd() {
 		if s.peek() == '\n' {
+			s.line++
+		} else {
 			s.advance()
 		}
 	}
@@ -206,8 +205,6 @@ func (s *scanner) string() (err error) {
 	}
 
 	s.advance()
-	substring := string(s.source[s.start+1 : s.current-1])
-	tokenType := token.String
-	s.addToken(&tokenType, &substring)
+	s.addToken(token.String, string(s.source[s.start+1:s.current-1]))
 	return
 }

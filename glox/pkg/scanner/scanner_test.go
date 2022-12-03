@@ -9,13 +9,11 @@ import (
 )
 
 func simpleToken(tokenType token.Type, line int) *token.Token {
-	// This is a simplification! We may need to customize the lexeme.
-	tokenString := tokenType.String()
 	return &token.Token{
 		TokenType: tokenType,
-		Lexeme:    &tokenString,
-		Literal:   nil,
-		Line:      line,
+		// This is a simplification! We may need to customize the lexeme.
+		Lexeme: tokenType.String(),
+		Line:   line,
 	}
 }
 
@@ -79,20 +77,20 @@ func TestScanner_ScanTokens(t *testing.T) {
 				token.NewEofToken(3),
 			},
 		},
-		// {
-		// 	name:    "string",
-		// 	source:  "\"hello world\"",
-		// 	wantErr: nil,
-		// 	wantTokens: []*token.Token{
-		// 		&token.Token{
-		// 			TokenType: token.String,
-		// 			Lexeme:    `""`,
-		// 			Literal:   &"",
-		// 			Line:      1,
-		// 		},
-		// 		token.NewEofToken(1),
-		// 	},
-		// },
+		{
+			name:    "string",
+			source:  "\"hello world\"",
+			wantErr: nil,
+			wantTokens: []*token.Token{
+				{
+					TokenType: token.String,
+					Lexeme:    "\"hello world\"",
+					Literal:   "hello world",
+					Line:      1,
+				},
+				token.NewEofToken(1),
+			},
+		},
 	}
 
 	for _, tc := range tests {
