@@ -119,6 +119,30 @@ func TestScanner_ScanTokens(t *testing.T) {
 				token.NewEofToken(1),
 			},
 		},
+		{
+			name:    "number with method call",
+			source:  "2345.() ",
+			wantErr: nil,
+			wantTokens: []*token.Token{
+				{
+					TokenType: token.Number,
+					Lexeme:    "2345",
+					Literal:   2345.0,
+					Line:      1,
+				},
+				simpleToken(token.Dot, 1),
+				// TODO: add this once we have identifiers:
+				// {
+				// 	TokenType: token.String,
+				// 	Lexeme:    "foo",
+				// 	Literal:   "foo",
+				// 	Line:      1,
+				// },
+				simpleToken(token.LeftParen, 1),
+				simpleToken(token.RightParen, 1),
+				token.NewEofToken(1),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -127,6 +151,11 @@ func TestScanner_ScanTokens(t *testing.T) {
 			gotTokens, err := s.ScanTokens()
 
 			// Assert that the errors are either both non-nil, or have the same error message.
+			if (err == nil) != (tc.wantErr == nil) {
+				t.Errorf("ScanTokens() has an unexpected err:\nerror:\n%v\nwantErr:\n%v\n", err, tc.wantErr)
+				return
+			}
+
 			if err != tc.wantErr && err.Error() != tc.wantErr.Error() {
 				t.Errorf("ScanTokens() error = %v, wantErr %v", err, tc.wantErr)
 				return

@@ -199,6 +199,19 @@ func (s *scanner) peek() rune {
 	}
 }
 
+func (s *scanner) peekNext() rune {
+	if s.isAtEnd() {
+		return utf8.RuneError
+	} else {
+		_, size := utf8.DecodeRune(s.source[s.current:])
+		if s.current+size >= len(s.source) {
+			return utf8.RuneError
+		}
+		r, _ := utf8.DecodeRune(s.source[s.current+size:])
+		return r
+	}
+}
+
 func (s *scanner) string() (err error) {
 	for s.peek() != '"' && !s.isAtEnd() {
 		if s.peek() == '\n' {
@@ -222,7 +235,7 @@ func (s *scanner) number() (err error) {
 	for s.isDigit(s.peek()) {
 		s.advance()
 	}
-	if s.peek() == '.' {
+	if s.peek() == '.' && s.isDigit(s.peekNext()) {
 		s.advance()
 		for s.isDigit(s.peek()) {
 			s.advance()
