@@ -91,6 +91,34 @@ func TestScanner_ScanTokens(t *testing.T) {
 				token.NewEofToken(1),
 			},
 		},
+		// {
+		// 	name:    "number",
+		// 	source:  " 123",
+		// 	wantErr: nil,
+		// 	wantTokens: []*token.Token{
+		// 		{
+		// 			TokenType: token.Number,
+		// 			Lexeme:    "123",
+		// 			Literal:   123,
+		// 			Line:      1,
+		// 		},
+		// 		token.NewEofToken(1),
+		// 	},
+		// },
+		// {
+		// 	name:    "number with decimal",
+		// 	source:  "2345.2342 ",
+		// 	wantErr: nil,
+		// 	wantTokens: []*token.Token{
+		// 		{
+		// 			TokenType: token.Number,
+		// 			Lexeme:    "12345.2342",
+		// 			Literal:   2345.2342,
+		// 			Line:      1,
+		// 		},
+		// 		token.NewEofToken(1),
+		// 	},
+		// },
 	}
 
 	for _, tc := range tests {

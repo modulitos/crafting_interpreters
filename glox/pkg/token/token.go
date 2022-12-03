@@ -12,7 +12,7 @@ type Token struct {
 	// walk each character in the Literal to correctly identify it, it can also
 	// convert that textual representation of a value to the living runtime
 	// object that will be used by the interpreter later.
-	Literal string
+	Literal interface{}
 }
 
 func NewEofToken(line int) *Token {

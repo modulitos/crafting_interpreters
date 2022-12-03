@@ -29,7 +29,7 @@ const (
 	// // Literals.
 	// Identifier
 	String
-	// Number
+	Number
 
 	// // Keywords.
 	Eof

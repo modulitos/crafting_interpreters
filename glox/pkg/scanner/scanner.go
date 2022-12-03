@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/modulitos/glox/pkg/token"
 )
@@ -138,7 +139,12 @@ func (s *scanner) scanToken() {
 			s.string()
 			return
 		default:
-			s.errors = append(s.errors, fmt.Errorf("Unexpected character: %c on line: %d", c, s.line))
+			if s.isDigit(c) {
+				s.number()
+			} else {
+
+				s.errors = append(s.errors, fmt.Errorf("Unexpected character: %c on line: %d", c, s.line))
+			}
 			return
 		}
 	}
@@ -148,13 +154,17 @@ func (s *scanner) isAtEnd() bool {
 	return s.current >= len(s.source)
 }
 
-func (s *scanner) advance() byte {
-	c := s.source[s.current]
-	s.current++
-	return c
+func (s *scanner) advance() rune {
+	c, size := utf8.DecodeRune(s.source[s.current:])
+	s.current += size
+	return rune(c)
 }
 
-func (s *scanner) addToken(t token.Type, literal string) {
+func (s *scanner) isDigit(c rune) bool {
+	return '0' <= c && c <= '9'
+}
+
+func (s *scanner) addToken(t token.Type, literal interface{}) {
 	s.tokens = append(s.tokens,
 		&token.Token{
 			TokenType: t,
@@ -165,13 +175,13 @@ func (s *scanner) addToken(t token.Type, literal string) {
 }
 
 func (s *scanner) addSimpleToken(t token.Type) {
-	s.addToken(t, "")
+	s.addToken(t, nil)
 }
 
-func (s *scanner) match(expected byte) bool {
+func (s *scanner) match(expected rune) bool {
 	if s.isAtEnd() {
 		return false
-	} else if s.source[s.current] != expected {
+	} else if actual, _ := utf8.DecodeRune(s.source[s.current:]); actual != expected {
 		return false
 	} else {
 		s.current++
@@ -179,14 +189,12 @@ func (s *scanner) match(expected byte) bool {
 	}
 }
 
-func (s *scanner) peek() byte {
+func (s *scanner) peek() rune {
 	if s.isAtEnd() {
-		// TODO: Consider using a rune here instead?
-		//
-		// byte is basically a u8. So we return 0, which is the default byte:
-		return 0
+		return utf8.RuneError
 	} else {
-		return s.source[s.current]
+		r, _ := utf8.DecodeRune(s.source[s.current:])
+		return r
 	}
 }
 
@@ -206,5 +214,14 @@ func (s *scanner) string() (err error) {
 
 	s.advance()
 	s.addToken(token.String, string(s.source[s.start+1:s.current-1]))
+	return
+}
+
+func (s *scanner) number() (err error) {
+	// TODO
+	for s.isDigit(s.peek()) {
+
+	}
+	s.addToken(token.Number, string(s.source[s.start+1:s.current-1]))
 	return
 }
