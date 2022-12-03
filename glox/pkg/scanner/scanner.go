@@ -3,6 +3,7 @@ package scanner
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -218,10 +219,23 @@ func (s *scanner) string() (err error) {
 }
 
 func (s *scanner) number() (err error) {
-	// TODO
 	for s.isDigit(s.peek()) {
-
+		s.advance()
 	}
-	s.addToken(token.Number, string(s.source[s.start+1:s.current-1]))
+	if s.peek() == '.' {
+		s.advance()
+		for s.isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+	str := string(s.source[s.start:s.current])
+	literal, err := strconv.ParseFloat(str, 64)
+
+	if err != nil {
+		err = fmt.Errorf("Failed to parse number into string: %s, at line: %d", str, s.line)
+		return
+	}
+
+	s.addToken(token.Number, literal)
 	return
 }
