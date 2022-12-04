@@ -269,6 +269,12 @@ func (s *scanner) identifier() (err error) {
 		s.advance()
 	}
 
-	s.addToken(token.Identifier, nil)
+	text := string(s.source[s.start:s.current])
+
+	if keyword, exists := token.Keywords[text]; exists == true {
+		s.addToken(keyword, nil)
+	} else {
+		s.addToken(token.Identifier, nil)
+	}
 	return
 }

@@ -156,6 +156,21 @@ func TestScanner_ScanTokens(t *testing.T) {
 				token.NewEofToken(1),
 			},
 		},
+		{
+			name:    "key words",
+			source:  "var blah123",
+			wantErr: nil,
+			wantTokens: []*token.Token{
+				simpleToken(token.Var, 1),
+				{
+					TokenType: token.Identifier,
+					Lexeme:    "blah123",
+					Literal:   nil,
+					Line:      1,
+				},
+				token.NewEofToken(1),
+			},
+		},
 	}
 
 	for _, tc := range tests {

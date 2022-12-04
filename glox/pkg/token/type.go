@@ -33,22 +33,22 @@ const (
 
 	// // Keywords.
 	Eof
-	// And
-	// Class
-	// Else
-	// False
-	// Fun
-	// For
-	// If
-	// Nil
-	// Or
-	// Print
-	// Return
-	// Super
-	// This
-	// True
-	// Var
-	// While
+	And
+	Class
+	Else
+	False
+	Fun
+	For
+	If
+	Nil
+	Or
+	Print
+	Return
+	Super
+	This
+	True
+	Var
+	While
 )
 
 func (t Type) String() string {
@@ -91,52 +91,58 @@ func (t Type) String() string {
 		return "<"
 	case LessEqual:
 		return "<="
-
 	case Identifier:
 		return "Identifier"
 	case String:
 		return "String"
 	case Number:
 		return "Number"
-
-	// case Number:
-	// 	return ""
-	// case And:
-	// 	return ""
-	// case Class:
-	// 	return ""
-	// case Else:
-	// 	return ""
-	// case False:
-	// 	return ""
-	// case Fun:
-	// 	return ""
-	// case For:
-	// 	return ""
-	// case If:
-	// 	return ""
-	// case Nil:
-	// 	return ""
-	// case Or:
-	// 	return ""
-	// case Print:
-	// 	return ""
-	// case Return:
-	// 	return ""
-	// case Super:
-	// 	return ""
-	// case This:
-	// 	return ""
-	// case True:
-	// 	return ""
-	// case Var:
-	// 	return ""
-	// case While:
-	// 	return ""
 	case Eof:
 		return "EOF"
 	default:
-		// Is there a better pattern here?
-		return "invalid type!"
+		if str, exists := reverseKeywords[t]; exists == true {
+			return str
+		} else {
+			// Is there a better pattern here?
+			return "invalid type!"
+		}
 	}
+}
+
+var Keywords = map[string]Type{
+	"and":    And,
+	"class":  Class,
+	"else":   Else,
+	"false":  False,
+	"fun":    Fun,
+	"for":    For,
+	"if":     If,
+	"nil":    Nil,
+	"or":     Or,
+	"print":  Print,
+	"return": Return,
+	"super":  Super,
+	"this":   This,
+	"true":   True,
+	"var":    Var,
+	"while":  While,
+}
+
+var reverseKeywords = map[Type]string{
+	And:    "and",
+	Class:  "class",
+	Else:   "else",
+	False:  "false",
+	Fun:    "fun",
+	For:    "for",
+	If:     "if",
+	Nil:    "nil",
+	Or:     "or",
+	Print:  "print",
+	Return: "return",
+	Super:  "super",
+	This:   "this",
+	True:   "true",
+	Var:    "var",
+	While:  "while",
 }
