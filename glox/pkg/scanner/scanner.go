@@ -142,8 +142,9 @@ func (s *scanner) scanToken() {
 		default:
 			if s.isDigit(c) {
 				s.number()
+			} else if s.isAlpha(c) {
+				s.identifier()
 			} else {
-
 				s.errors = append(s.errors, fmt.Errorf("Unexpected character: %c on line: %d", c, s.line))
 			}
 			return
@@ -163,6 +164,16 @@ func (s *scanner) advance() rune {
 
 func (s *scanner) isDigit(c rune) bool {
 	return '0' <= c && c <= '9'
+}
+
+func (s *scanner) isAlpha(c rune) bool {
+	return 'a' <= c && c <= 'z' ||
+		'A' <= c && c <= 'Z' ||
+		c == '_'
+}
+
+func (s *scanner) isAlphaNumeric(c rune) bool {
+	return s.isDigit(c) || s.isAlpha(c)
 }
 
 func (s *scanner) addToken(t token.Type, literal interface{}) {
@@ -250,5 +261,14 @@ func (s *scanner) number() (err error) {
 	}
 
 	s.addToken(token.Number, literal)
+	return
+}
+
+func (s *scanner) identifier() (err error) {
+	for s.isAlphaNumeric(s.peek()) {
+		s.advance()
+	}
+
+	s.addToken(token.Identifier, nil)
 	return
 }

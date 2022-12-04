@@ -121,7 +121,7 @@ func TestScanner_ScanTokens(t *testing.T) {
 		},
 		{
 			name:    "number with method call",
-			source:  "2345.() ",
+			source:  "2345.foo() ",
 			wantErr: nil,
 			wantTokens: []*token.Token{
 				{
@@ -131,15 +131,28 @@ func TestScanner_ScanTokens(t *testing.T) {
 					Line:      1,
 				},
 				simpleToken(token.Dot, 1),
-				// TODO: add this once we have identifiers:
-				// {
-				// 	TokenType: token.String,
-				// 	Lexeme:    "foo",
-				// 	Literal:   "foo",
-				// 	Line:      1,
-				// },
+				{
+					TokenType: token.Identifier,
+					Lexeme:    "foo",
+					Literal:   nil,
+					Line:      1,
+				},
 				simpleToken(token.LeftParen, 1),
 				simpleToken(token.RightParen, 1),
+				token.NewEofToken(1),
+			},
+		},
+		{
+			name:    "literal",
+			source:  "blah123",
+			wantErr: nil,
+			wantTokens: []*token.Token{
+				{
+					TokenType: token.Identifier,
+					Lexeme:    "blah123",
+					Literal:   nil,
+					Line:      1,
+				},
 				token.NewEofToken(1),
 			},
 		},

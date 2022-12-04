@@ -27,7 +27,7 @@ const (
 	LessEqual
 
 	// // Literals.
-	// Identifier
+	Identifier
 	String
 	Number
 
@@ -51,7 +51,6 @@ const (
 	// While
 )
 
-// Do we need this method?
 func (t Type) String() string {
 	switch t {
 	case LeftParen:
@@ -92,12 +91,13 @@ func (t Type) String() string {
 		return "<"
 	case LessEqual:
 		return "<="
-	// case Identifier:
-	// return "="
 
+	case Identifier:
+		return "Identifier"
 	case String:
-		// TODO: what is this?
-		return "some string"
+		return "String"
+	case Number:
+		return "Number"
 
 	// case Number:
 	// 	return ""
