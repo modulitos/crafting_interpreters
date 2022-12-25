@@ -23,5 +23,5 @@ func NewEofToken(line int) *Token {
 }
 
 func (t *Token) String() string {
-	return fmt.Sprintf("%s %s %s", t.TokenType.String(), t.Lexeme, t.Literal)
+	return fmt.Sprintf("type: %s with lexeme: %q with literal: %s", t.TokenType.String(), t.Lexeme, t.Literal)
 }

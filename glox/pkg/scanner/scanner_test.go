@@ -8,12 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func simpleToken(tokenType token.Type, line int) *token.Token {
+func simpleToken(tokenType token.Type, line int, lexeme string) *token.Token {
 	return &token.Token{
 		TokenType: tokenType,
-		// This is a simplification! We may need to customize the lexeme.
-		Lexeme: tokenType.String(),
-		Line:   line,
+		Lexeme:    lexeme,
+		Line:      line,
 	}
 }
 
@@ -37,12 +36,12 @@ func TestScanner_ScanTokens(t *testing.T) {
 			source:  "(+) {.}",
 			wantErr: nil,
 			wantTokens: []*token.Token{
-				simpleToken(token.LeftParen, 1),
-				simpleToken(token.Plus, 1),
-				simpleToken(token.RightParen, 1),
-				simpleToken(token.LeftBrace, 1),
-				simpleToken(token.Dot, 1),
-				simpleToken(token.RightBrace, 1),
+				simpleToken(token.LeftParen, 1, "("),
+				simpleToken(token.Plus, 1, "+"),
+				simpleToken(token.RightParen, 1, ")"),
+				simpleToken(token.LeftBrace, 1, "{"),
+				simpleToken(token.Dot, 1, "."),
+				simpleToken(token.RightBrace, 1, "}"),
 				token.NewEofToken(1),
 			},
 		},
@@ -57,10 +56,10 @@ func TestScanner_ScanTokens(t *testing.T) {
 			source:  "<= == != !",
 			wantErr: nil,
 			wantTokens: []*token.Token{
-				simpleToken(token.LessEqual, 1),
-				simpleToken(token.EqualEqual, 1),
-				simpleToken(token.BangEqual, 1),
-				simpleToken(token.Bang, 1),
+				simpleToken(token.LessEqual, 1, "<="),
+				simpleToken(token.EqualEqual, 1, "=="),
+				simpleToken(token.BangEqual, 1, "!="),
+				simpleToken(token.Bang, 1, "!"),
 				token.NewEofToken(1),
 			},
 		},
@@ -69,11 +68,11 @@ func TestScanner_ScanTokens(t *testing.T) {
 			source:  "!\n!!// this is a comment \n() // some other comment",
 			wantErr: nil,
 			wantTokens: []*token.Token{
-				simpleToken(token.Bang, 1),
-				simpleToken(token.Bang, 2),
-				simpleToken(token.Bang, 2),
-				simpleToken(token.LeftParen, 3),
-				simpleToken(token.RightParen, 3),
+				simpleToken(token.Bang, 1, "!"),
+				simpleToken(token.Bang, 2, "!"),
+				simpleToken(token.Bang, 2, "!"),
+				simpleToken(token.LeftParen, 3, "("),
+				simpleToken(token.RightParen, 3, ")"),
 				token.NewEofToken(3),
 			},
 		},
@@ -130,15 +129,15 @@ func TestScanner_ScanTokens(t *testing.T) {
 					Literal:   2345.0,
 					Line:      1,
 				},
-				simpleToken(token.Dot, 1),
+				simpleToken(token.Dot, 1, "."),
 				{
 					TokenType: token.Identifier,
 					Lexeme:    "foo",
 					Literal:   nil,
 					Line:      1,
 				},
-				simpleToken(token.LeftParen, 1),
-				simpleToken(token.RightParen, 1),
+				simpleToken(token.LeftParen, 1, "("),
+				simpleToken(token.RightParen, 1, ")"),
 				token.NewEofToken(1),
 			},
 		},
@@ -161,7 +160,7 @@ func TestScanner_ScanTokens(t *testing.T) {
 			source:  "var blah123",
 			wantErr: nil,
 			wantTokens: []*token.Token{
-				simpleToken(token.Var, 1),
+				simpleToken(token.Var, 1, "var"),
 				{
 					TokenType: token.Identifier,
 					Lexeme:    "blah123",

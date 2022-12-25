@@ -15,7 +15,7 @@ func run(source []byte) error {
 		return fmt.Errorf("Scanning tokens: %w", err)
 	}
 	fmt.Printf("tokens:\n")
-	for token := range tokens {
+	for _, token := range tokens {
 		fmt.Println(token)
 	}
 	return nil
@@ -36,9 +36,10 @@ func RunPrompt() error {
 	// return fmt.Errorf("Not implemented!")
 	fmt.Println("starting up lox version 0.0.0")
 	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print("> ")
 	for scanner.Scan() {
-		fmt.Println("> ")
 		run(scanner.Bytes())
+		fmt.Print("> ")
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "Reading standard input:", err)
