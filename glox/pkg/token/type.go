@@ -1,6 +1,10 @@
 package token
 
+// This is how tokens are implemented in golang:
+// https://cs.opensource.google/go/go/+/master:src/go/token/token.go
 type Type int
+
+// https://cs.opensource.google/go/go/+/master:src/go/ast/ast.go
 
 const (
 	// Single-character tokens.

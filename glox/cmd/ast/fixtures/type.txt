@@ -1,0 +1,10 @@
+
+type Binary struct {
+	left     Expr
+	operator Token
+	right    Expr
+}
+
+type Grouping struct {
+	expression Expr
+}
