@@ -1,10 +1,23 @@
 
+type ExprVisitor interface {
+	VisitBinary(v *BinaryExpr) (result interface{}, err error)
+	VisitGrouping(v *GroupingExpr) (result interface{}, err error)
+}
+
 type BinaryExpr struct {
 	left     Expr
 	operator *token.Token
 	right    Expr
 }
 
+func (e *BinaryExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
+	visitor.visitBinary(e)
+}
+
 type GroupingExpr struct {
 	expression Expr
+}
+
+func (e *GroupingExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
+	visitor.visitGrouping(e)
 }

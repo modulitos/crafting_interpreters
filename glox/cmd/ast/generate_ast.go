@@ -38,25 +38,23 @@ func (g *generator) linebreak() {
 func (g *generator) writeTypes(types []string) {
 	// TODO: parse types in a GrammarType struct so it's easier
 
-	// // write visitor
-	// g.linebreak()
-	// fmt.Fprintf(&g.buf, "type ExprVisitor interface {")
-	// g.linebreak()
-	// for _, typestr := range types {
-	// 	name := strings.TrimSpace(strings.Split(typestr, ":")[0])
-	// 	// fields := strings.Split(strings.Split(typestr, ":")[1], ",")
-	// 	fmt.Fprintf(&g.buf, "Visit%s(v *%sExpr) (result interface{}, err error)", name, name)
-	// 	g.linebreak()
-	// }
-	// // fmt.Println(&g.buf, "}")
-	// // g.buf.Write([]byte("}"))
-	// // g.linebreak()
-	// g.buf.Write([]byte("}\n"))
+	// write visitor
+	g.linebreak()
+	fmt.Fprintf(&g.buf, "type ExprVisitor interface {")
+	g.linebreak()
+	for _, typestr := range types {
+		name := strings.TrimSpace(strings.Split(typestr, ":")[0])
+		fmt.Fprintf(&g.buf, "Visit%s(v *%sExpr) (result interface{}, err error)", name, name)
+		g.linebreak()
+	}
+	g.buf.Write([]byte("}\n"))
 
 	for _, typestr := range types {
 		g.linebreak()
 		name := strings.TrimSpace(strings.Split(typestr, ":")[0])
 		fields := strings.Split(strings.Split(typestr, ":")[1], ",")
+
+		// Define the Expr struct:
 		fmt.Fprintf(&g.buf, "type %sExpr struct {", name)
 		g.linebreak()
 		for _, field := range fields {
@@ -66,6 +64,14 @@ func (g *generator) writeTypes(types []string) {
 			fmt.Fprintf(&g.buf, `%s %s`, name, fieldType)
 			g.linebreak()
 		}
+		g.buf.Write([]byte("}"))
+		g.linebreak()
+
+		// implement the Accept method:
+		fmt.Fprintf(&g.buf, "func (e *%sExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {", name)
+		g.linebreak()
+		fmt.Fprintf(&g.buf, "visitor.visit%s(e)", name)
+		g.linebreak()
 		g.buf.Write([]byte("}"))
 		g.linebreak()
 	}
