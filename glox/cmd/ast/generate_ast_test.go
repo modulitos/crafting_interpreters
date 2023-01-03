@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNaiveExprPrinter(t *testing.T) {
+func TestASTGenerator(t *testing.T) {
 	tests := []struct {
 		name    string
 		fixture string

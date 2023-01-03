@@ -1,7 +1,7 @@
 
 type ExprVisitor interface {
-	VisitBinary(v *BinaryExpr) (result interface{}, err error)
-	VisitGrouping(v *GroupingExpr) (result interface{}, err error)
+	VisitBinary(e *BinaryExpr) (result interface{}, err error)
+	VisitGrouping(e *GroupingExpr) (result interface{}, err error)
 }
 
 type BinaryExpr struct {
@@ -11,7 +11,7 @@ type BinaryExpr struct {
 }
 
 func (e *BinaryExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
-	visitor.visitBinary(e)
+	return visitor.VisitBinary(e)
 }
 
 type GroupingExpr struct {
@@ -19,5 +19,5 @@ type GroupingExpr struct {
 }
 
 func (e *GroupingExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
-	visitor.visitGrouping(e)
+	return visitor.VisitGrouping(e)
 }
