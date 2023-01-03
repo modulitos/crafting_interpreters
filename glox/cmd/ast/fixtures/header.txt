@@ -4,6 +4,7 @@ package ast
 
 import (
 	"errors"
+	"github.com/modulitos/glox/pkg/token"
 )
 
 type Expr interface {

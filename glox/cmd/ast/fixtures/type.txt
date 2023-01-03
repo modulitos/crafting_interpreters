@@ -1,10 +1,10 @@
 
-type Binary struct {
+type BinaryExpr struct {
 	left     Expr
-	operator Token
+	operator *token.Token
 	right    Expr
 }
 
-type Grouping struct {
+type GroupingExpr struct {
 	expression Expr
 }

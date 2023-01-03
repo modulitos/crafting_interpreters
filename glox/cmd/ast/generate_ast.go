@@ -22,6 +22,7 @@ package ast
 
 import (
 	"errors"
+	"github.com/modulitos/glox/pkg/token"
 )
 
 type Expr interface {
@@ -35,11 +36,28 @@ func (g *generator) linebreak() {
 }
 
 func (g *generator) writeTypes(types []string) {
+	// TODO: parse types in a GrammarType struct so it's easier
+
+	// // write visitor
+	// g.linebreak()
+	// fmt.Fprintf(&g.buf, "type ExprVisitor interface {")
+	// g.linebreak()
+	// for _, typestr := range types {
+	// 	name := strings.TrimSpace(strings.Split(typestr, ":")[0])
+	// 	// fields := strings.Split(strings.Split(typestr, ":")[1], ",")
+	// 	fmt.Fprintf(&g.buf, "Visit%s(v *%sExpr) (result interface{}, err error)", name, name)
+	// 	g.linebreak()
+	// }
+	// // fmt.Println(&g.buf, "}")
+	// // g.buf.Write([]byte("}"))
+	// // g.linebreak()
+	// g.buf.Write([]byte("}\n"))
+
 	for _, typestr := range types {
 		g.linebreak()
-		name := strings.Split(typestr, ":")[0]
+		name := strings.TrimSpace(strings.Split(typestr, ":")[0])
 		fields := strings.Split(strings.Split(typestr, ":")[1], ",")
-		fmt.Fprintf(&g.buf, "type %s struct {", name)
+		fmt.Fprintf(&g.buf, "type %sExpr struct {", name)
 		g.linebreak()
 		for _, field := range fields {
 			field := strings.TrimSpace(field)
@@ -56,7 +74,7 @@ func (g *generator) writeTypes(types []string) {
 func (g *generator) format() (err error) {
 	formatted, err := format.Source(g.buf.Bytes())
 	if err != nil {
-		err = fmt.Errorf("Formatting code with gofmt: %w", err)
+		err = fmt.Errorf("Formatting code with gofmt: %w\n\ncode: %s", err, g.buf.String())
 		return
 	}
 	g.buf.Reset()

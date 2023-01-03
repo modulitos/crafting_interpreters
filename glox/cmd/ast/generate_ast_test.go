@@ -28,7 +28,7 @@ func TestNaiveExprPrinter(t *testing.T) {
 			fixture: "type.txt",
 			doTest: func(g *generator) {
 				g.writeTypes([]string{
-					"Binary : left Expr, operator Token, right Expr",
+					"Binary : left Expr, operator *token.Token, right Expr",
 					"Grouping : expression Expr",
 				})
 			},
