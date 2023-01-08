@@ -110,10 +110,10 @@ func main() {
 	generator.writeHeader()
 
 	generator.writeTypes([]string{
-		"Binary : left Expr, operator *token.Token, right Expr",
-		"Grouping : expression Expr",
-		"Literal : value interface{}",
-		"Unary : operator *token.Token, right Expr",
+		"Binary : Left Expr, Operator *token.Token, Right Expr",
+		"Grouping : Expression Expr",
+		"Literal : Value interface{}",
+		"Unary : Operator *token.Token, Right Expr",
 	})
 
 	err = generator.format()

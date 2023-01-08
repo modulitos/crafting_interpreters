@@ -28,8 +28,8 @@ func TestASTGenerator(t *testing.T) {
 			fixture: "type.txt",
 			doTest: func(g *generator) {
 				g.writeTypes([]string{
-					"Binary : left Expr, operator *token.Token, right Expr",
-					"Grouping : expression Expr",
+					"Binary : Left Expr, Operator *token.Token, Right Expr",
+					"Grouping : Expression Expr",
 				})
 			},
 		},
