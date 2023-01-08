@@ -9,42 +9,51 @@ import (
 	"github.com/modulitos/glox/pkg/token"
 )
 
-type parser struct {
-	tokens  []*token.Token
+type Parser struct {
+	Tokens  []*token.Token
 	current int
+}
+
+type ParserError struct {
+	err error
+}
+
+func (e ParserError) Error() string {
+	// return fmt.Errorf("err: %w", e.err)
+	return fmt.Sprintf("ParserError: %v", e.err)
 }
 
 // ----------------------------------------------------------------------------
 // Parsing support
 
-func (p *parser) peek() *token.Token {
-	return p.tokens[p.current]
+func (p *Parser) peek() *token.Token {
+	return p.Tokens[p.current]
 }
 
-func (p *parser) isAtEnd() bool {
+func (p *Parser) isAtEnd() bool {
 	return p.peek().TokenType == token.Eof
 }
 
-func (p *parser) previous() *token.Token {
-	return p.tokens[p.current-1]
+func (p *Parser) previous() *token.Token {
+	return p.Tokens[p.current-1]
 }
 
-func (p *parser) advance() *token.Token {
+func (p *Parser) advance() *token.Token {
 	if !p.isAtEnd() {
 		p.current += 1
 	}
 	return p.previous()
 }
 
-func (p *parser) check(tokenType token.Type) bool {
+func (p *Parser) check(tokenType token.Type) bool {
 	if p.isAtEnd() {
 		return false
 	} else {
-		return tokenType == p.tokens[p.current].TokenType
+		return tokenType == p.Tokens[p.current].TokenType
 	}
 }
 
-func (p *parser) match(types ...token.Type) bool {
+func (p *Parser) match(types ...token.Type) bool {
 	for _, tokenType := range types {
 		if p.check(tokenType) {
 			p.advance()
@@ -54,7 +63,7 @@ func (p *parser) match(types ...token.Type) bool {
 	return false
 }
 
-func (p *parser) consume(tokenType token.Type) (*token.Token, error) {
+func (p *Parser) consume(tokenType token.Type) (*token.Token, error) {
 	if p.check(tokenType) {
 		return p.advance(), nil
 	} else {
@@ -66,11 +75,11 @@ func (p *parser) consume(tokenType token.Type) (*token.Token, error) {
 // ----------------------------------------------------------------------------
 // Types
 
-func (p *parser) expression() (expr ast.Expr, err error) {
+func (p *Parser) expression() (expr ast.Expr, err error) {
 	return p.equality()
 }
 
-func (p *parser) equality() (expr ast.Expr, err error) {
+func (p *Parser) equality() (expr ast.Expr, err error) {
 	expr, err = p.comparison()
 	if err != nil {
 		return
@@ -92,7 +101,7 @@ func (p *parser) equality() (expr ast.Expr, err error) {
 	return
 }
 
-func (p *parser) comparison() (expr ast.Expr, err error) {
+func (p *Parser) comparison() (expr ast.Expr, err error) {
 	expr, err = p.term()
 	if err != nil {
 		return
@@ -113,7 +122,7 @@ func (p *parser) comparison() (expr ast.Expr, err error) {
 	return
 }
 
-func (p *parser) term() (expr ast.Expr, err error) {
+func (p *Parser) term() (expr ast.Expr, err error) {
 	expr, err = p.factor()
 	if err != nil {
 		return
@@ -134,7 +143,7 @@ func (p *parser) term() (expr ast.Expr, err error) {
 	return
 }
 
-func (p *parser) factor() (expr ast.Expr, err error) {
+func (p *Parser) factor() (expr ast.Expr, err error) {
 	expr, err = p.unary()
 	if err != nil {
 		return
@@ -156,7 +165,7 @@ func (p *parser) factor() (expr ast.Expr, err error) {
 	return
 }
 
-func (p *parser) unary() (expr ast.Expr, err error) {
+func (p *Parser) unary() (expr ast.Expr, err error) {
 	if p.match(token.Slash, token.Star) {
 		operator := p.previous()
 		var right ast.Expr
@@ -173,7 +182,7 @@ func (p *parser) unary() (expr ast.Expr, err error) {
 	return p.primary()
 }
 
-func (p *parser) primary() (expr ast.Expr, err error) {
+func (p *Parser) primary() (expr ast.Expr, err error) {
 	if p.match(token.False) {
 		expr = &ast.LiteralExpr{
 			Value: false,
@@ -219,11 +228,13 @@ func (p *parser) primary() (expr ast.Expr, err error) {
 	return
 }
 
-func (p *parser) parse() ast.Expr {
-	expr, err := p.expression()
+func (p *Parser) Parse() (expr ast.Expr, err error) {
+	expr, err = p.expression()
 	if err != nil {
-		fmt.Println("err: %w", err)
-		return nil
+		err = ParserError{
+			err: err,
+		}
+		return
 	}
-	return expr
+	return
 }

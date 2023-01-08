@@ -20,7 +20,7 @@ func main() {
 	} else {
 		err := lox.RunPrompt()
 		if err != nil {
-			err = fmt.Errorf("running prompt: %w", err)
+			err = fmt.Errorf("exiting due to error: %w", err)
 		}
 		os.Exit(65)
 	}

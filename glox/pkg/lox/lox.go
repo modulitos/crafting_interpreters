@@ -5,19 +5,34 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/modulitos/glox/pkg/ast"
+	"github.com/modulitos/glox/pkg/parser"
 	"github.com/modulitos/glox/pkg/scanner"
 )
 
-func run(source []byte) error {
+func run(source []byte) (err error) {
 	s := scanner.NewScanner(source)
 	tokens, err := s.ScanTokens()
 	if err != nil {
-		return fmt.Errorf("Scanning tokens: %w", err)
+		err = fmt.Errorf("Scanning tokens: %w", err)
+		return
 	}
-	fmt.Printf("tokens:\n")
-	for _, token := range tokens {
-		fmt.Println(token)
+	// fmt.Printf("tokens:\n")
+
+	// for _, token := range tokens {
+	// 	fmt.Println(token)
+	// }
+	parser := parser.Parser{Tokens: tokens}
+	expression, err := parser.Parse()
+	if err != nil {
+		// fmt.Printf("parser error! %s\n", err)
+		// return fmt.Errorf("Parser error: %w", err)
+		return
 	}
+
+	astPrinter := ast.AstPrint{}
+	fmt.Println(astPrinter.Print(expression))
+
 	return nil
 }
 
@@ -30,7 +45,7 @@ func RunFile(file string) error {
 	return run(bytes)
 }
 
-func RunPrompt() error {
+func RunPrompt() (err error) {
 	// fmt.Println("running prompt!")
 	// os.ReadLin
 	// return fmt.Errorf("Not implemented!")
@@ -38,7 +53,10 @@ func RunPrompt() error {
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Print("> ")
 	for scanner.Scan() {
-		run(scanner.Bytes())
+		promptErr := run(scanner.Bytes())
+		if promptErr != nil {
+			fmt.Printf("Error evaluating input: %v\n", promptErr)
+		}
 		fmt.Print("> ")
 	}
 	if err := scanner.Err(); err != nil {

@@ -124,14 +124,56 @@ func TestParser_Parse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "binary expr: asdf + qwer",
+			tokens: []*token.Token{
+				{
+					TokenType: token.String,
+					Lexeme:    "asdf",
+					Literal:   "asdf",
+					Line:      1,
+				},
+				{
+					TokenType: token.Plus,
+					Lexeme:    "+",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
+					TokenType: token.String,
+					Lexeme:    "qwer",
+					Literal:   "qwer",
+					Line:      1,
+				},
+				{
+					TokenType: token.Eof,
+					Lexeme:    "",
+					Literal:   nil,
+					Line:      1,
+				},
+			},
+			expected: &ast.BinaryExpr{
+				Left: &ast.LiteralExpr{Value: "asdf"},
+				Operator: &token.Token{
+					TokenType: token.Plus,
+					Lexeme:    "+",
+					Line:      1,
+				},
+				Right: &ast.LiteralExpr{Value: "qwer"},
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			parser := parser{
-				tokens: tc.tokens,
+			parser := Parser{
+				Tokens: tc.tokens,
 			}
-			actual := parser.parse()
+			actual, err := parser.Parse()
+			if err != nil {
+				t.Errorf("Unexpected err:\nerror:\n%v\n", err)
+				return
+			}
 			assert.Equal(t, tc.expected, actual)
 
 		})

@@ -47,6 +47,18 @@ func TestNaiveExprPrinter(t *testing.T) {
 			expected: "(+ 123 456)",
 		},
 		{
+			name: "binary strings",
+			expr: &BinaryExpr{
+				Left: &LiteralExpr{Value: "asdf"},
+				Operator: &token.Token{
+					TokenType: token.Plus,
+					Lexeme:    "+",
+				},
+				Right: &LiteralExpr{Value: "qwer"},
+			},
+			expected: "(+ asdf qwer)",
+		},
+		{
 			name: "grouping",
 			expr: &GroupingExpr{
 				Expression: &LiteralExpr{Value: 123},
@@ -61,7 +73,7 @@ func TestNaiveExprPrinter(t *testing.T) {
 			p := AstPrint{}
 
 			// When:
-			actual, err := p.Print(&tc.expr)
+			actual, err := p.Print(tc.expr)
 			if err != nil {
 				t.Errorf("%v has an unexpected err:\nerror:\n%v\n", tc.name, err)
 				return

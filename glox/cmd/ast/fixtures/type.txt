@@ -5,9 +5,9 @@ type ExprVisitor interface {
 }
 
 type BinaryExpr struct {
-	left     Expr
-	operator *token.Token
-	right    Expr
+	Left     Expr
+	Operator *token.Token
+	Right    Expr
 }
 
 func (e *BinaryExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
@@ -15,7 +15,7 @@ func (e *BinaryExpr) Accept(visitor ExprVisitor) (result interface{}, err error)
 }
 
 type GroupingExpr struct {
-	expression Expr
+	Expression Expr
 }
 
 func (e *GroupingExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
