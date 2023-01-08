@@ -8,7 +8,7 @@ import (
 type AstPrint struct {
 }
 
-func (a *AstPrint) print(e *Expr) (result interface{}, err error) {
+func (a *AstPrint) Print(e *Expr) (result interface{}, err error) {
 	return (*e).Accept(a)
 }
 

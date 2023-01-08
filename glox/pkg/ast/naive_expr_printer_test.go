@@ -61,7 +61,7 @@ func TestNaiveExprPrinter(t *testing.T) {
 			p := AstPrint{}
 
 			// When:
-			actual, err := p.print(&tc.expr)
+			actual, err := p.Print(&tc.expr)
 			if err != nil {
 				t.Errorf("%v has an unexpected err:\nerror:\n%v\n", tc.name, err)
 				return
