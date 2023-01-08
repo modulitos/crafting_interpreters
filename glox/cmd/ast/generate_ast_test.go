@@ -7,7 +7,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestASTGenerator(t *testing.T) {
@@ -53,7 +53,7 @@ func TestASTGenerator(t *testing.T) {
 			}
 
 			// then:
-			require.Equal(t, string(g.buf.Bytes()), expected)
+			assert.Equal(t, string(g.buf.Bytes()), expected)
 		})
 	}
 }

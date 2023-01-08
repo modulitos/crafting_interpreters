@@ -5,7 +5,7 @@ import (
 
 	"github.com/modulitos/glox/pkg/ast"
 	"github.com/modulitos/glox/pkg/token"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParser_Parse(t *testing.T) {
@@ -132,7 +132,7 @@ func TestParser_Parse(t *testing.T) {
 				tokens: tc.tokens,
 			}
 			actual := parser.parse()
-			require.Equal(t, tc.expected, actual)
+			assert.Equal(t, tc.expected, actual)
 
 		})
 	}

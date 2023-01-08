@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/modulitos/glox/pkg/token"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNaiveExprPrinter(t *testing.T) {
@@ -68,7 +68,7 @@ func TestNaiveExprPrinter(t *testing.T) {
 			}
 
 			// Then:
-			require.Equal(t, tc.expected, actual)
+			assert.Equal(t, tc.expected, actual)
 		})
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/modulitos/glox/pkg/token"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func simpleToken(tokenType token.Type, line int, lexeme string) *token.Token {
@@ -187,7 +187,7 @@ func TestScanner_ScanTokens(t *testing.T) {
 				t.Errorf("ScanTokens() error = %v, wantErr %v", err, tc.wantErr)
 				return
 			}
-			require.Equal(t, tc.wantTokens, gotTokens)
+			assert.Equal(t, tc.wantTokens, gotTokens)
 		})
 	}
 }
