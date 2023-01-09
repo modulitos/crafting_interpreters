@@ -10,6 +10,9 @@ import (
 	"github.com/modulitos/glox/pkg/token"
 )
 
+// ----------------------------------------------------------------------------
+// Interpreter API
+
 type Interpreter struct {
 	writer io.Writer
 }
@@ -18,6 +21,17 @@ func NewInterpreter(writer io.Writer) *Interpreter {
 	return &Interpreter{
 		writer: writer,
 	}
+}
+
+func (i *Interpreter) Interpret(expr ast.Expr) error {
+	value, err := expr.Accept(i)
+	if err != nil {
+		return &RuntimeError{
+			msg: fmt.Sprintf("Interpreter failed exception: %v\n", err),
+		}
+	}
+	fmt.Fprintln(i.writer, i.stringify(value))
+	return nil
 }
 
 // ----------------------------------------------------------------------------
@@ -296,18 +310,4 @@ func (i *Interpreter) VisitBinary(expr *ast.BinaryExpr) (result interface{}, err
 		token: expr.Operator,
 	}
 	return
-}
-
-// ----------------------------------------------------------------------------
-// Interpreter API
-
-func (i *Interpreter) Interpret(expr ast.Expr) error {
-	value, err := expr.Accept(i)
-	if err != nil {
-		return &RuntimeError{
-			msg: fmt.Sprintf("Interpreter failed exception: %v\n", err),
-		}
-	}
-	fmt.Fprintln(i.writer, i.stringify(value))
-	return nil
 }
