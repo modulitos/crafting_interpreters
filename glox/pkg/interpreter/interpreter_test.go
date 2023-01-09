@@ -12,9 +12,10 @@ import (
 
 func TestInterpreter(t *testing.T) {
 	tests := []struct {
-		name     string
-		expr     ast.Expr
-		expected interface{}
+		name        string
+		expr        ast.Expr
+		expected    string
+		expectedErr bool
 	}{
 		{
 			name:     "float",
@@ -62,6 +63,45 @@ func TestInterpreter(t *testing.T) {
 			},
 			expected: "21.1\n",
 		},
+		{
+			name: "addition of string and number",
+			expr: &ast.BinaryExpr{
+				Left: &ast.LiteralExpr{Value: "asdf"},
+				Operator: &token.Token{
+					TokenType: token.Plus,
+					Lexeme:    "+",
+					Line:      1,
+				},
+				Right: &ast.LiteralExpr{Value: 1.0},
+			},
+			expected: "asdf1\n",
+		},
+		{
+			name: "addition of number and string",
+			expr: &ast.BinaryExpr{
+				Left: &ast.LiteralExpr{Value: 1.0},
+				Operator: &token.Token{
+					TokenType: token.Plus,
+					Lexeme:    "+",
+					Line:      1,
+				},
+				Right: &ast.LiteralExpr{Value: "asdf"},
+			},
+			expected: "1asdf\n",
+		},
+		{
+			name: "divide by 0",
+			expr: &ast.BinaryExpr{
+				Left: &ast.LiteralExpr{Value: 1.0},
+				Operator: &token.Token{
+					TokenType: token.Slash,
+					Lexeme:    "/",
+					Line:      1,
+				},
+				Right: &ast.LiteralExpr{Value: 0.0},
+			},
+			expectedErr: true,
+		},
 	}
 
 	for _, tc := range tests {
@@ -72,18 +112,20 @@ func TestInterpreter(t *testing.T) {
 
 			// When:
 			err := interpreter.Interpret(tc.expr)
-			if err != nil {
-				t.Errorf("%v has an unexpected err:\nerror:\n%v\n", tc.name, err)
+			if (err != nil) != tc.expectedErr {
+				t.Errorf("%v has an unexpected err:\nerror:\n%v\nexpectedErr:\n%v\n", tc.name, err, tc.expectedErr)
+
 				return
 			}
 
-			// Then:
 			b, err := ioutil.ReadAll(buf)
 			if err != nil {
 				t.Errorf("%v has an unexpected err:\nerror:\n%v\n", tc.name, err)
 				return
 			}
 			actual := string(b)
+
+			// Then:
 			assert.Equal(t, tc.expected, actual)
 		})
 	}

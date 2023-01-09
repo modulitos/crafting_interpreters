@@ -203,22 +203,31 @@ func (i *Interpreter) VisitBinary(expr *ast.BinaryExpr) (result interface{}, err
 		result = (*leftNum) * (*rightNum)
 		return
 	case token.Plus:
-		numLeft, okLeft := left.(float64)
-		numRight, okRight := right.(float64)
-		if okLeft && okRight {
-			result = numLeft + numRight
-			return
-		}
-
-		strLeft, okLeft := left.(string)
-		strRight, okRight := right.(string)
-		if okLeft && okRight {
-			result = strLeft + strRight
-			return
+		// Many languages define + such that if either operand is a string, the
+		// other is converted to a string and the results are then concatenated.
+		switch tl := left.(type) {
+		case float64:
+			switch tr := right.(type) {
+			case float64:
+				result = tl + tr
+				return
+			case string:
+				result = fmt.Sprintf("%s%s", i.stringify(left), right)
+				return
+			}
+		case string:
+			switch tr := right.(type) {
+			case float64:
+				result = fmt.Sprintf("%s%s", left, i.stringify(right))
+				return
+			case string:
+				result = tl + tr
+				return
+			}
 		}
 
 		err = &RuntimeError{
-			msg:   fmt.Sprintf("operands must be both numbers or strings, got %v(%T) and %v(%T)", left, left, right, right),
+			msg:   fmt.Sprintf("operands must be both numbers, both strings, or at least one number and a string. Got %v(%T) and %v(%T)", left, left, right, right),
 			token: expr.Operator,
 		}
 		return
