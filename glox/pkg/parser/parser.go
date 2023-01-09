@@ -19,7 +19,6 @@ type ParserError struct {
 }
 
 func (e ParserError) Error() string {
-	// return fmt.Errorf("err: %w", e.err)
 	return fmt.Sprintf("ParserError: %v", e.err)
 }
 

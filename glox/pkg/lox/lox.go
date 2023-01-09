@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/modulitos/glox/pkg/ast"
+	"github.com/modulitos/glox/pkg/interpreter"
 	"github.com/modulitos/glox/pkg/parser"
 	"github.com/modulitos/glox/pkg/scanner"
 )
@@ -17,23 +17,17 @@ func run(source []byte) (err error) {
 		err = fmt.Errorf("Scanning tokens: %w", err)
 		return
 	}
-	// fmt.Printf("tokens:\n")
 
-	// for _, token := range tokens {
-	// 	fmt.Println(token)
-	// }
 	parser := parser.Parser{Tokens: tokens}
 	expression, err := parser.Parse()
 	if err != nil {
-		// fmt.Printf("parser error! %s\n", err)
-		// return fmt.Errorf("Parser error: %w", err)
 		return
 	}
 
-	astPrinter := ast.AstPrint{}
-	fmt.Println(astPrinter.Print(expression))
+	interpreter := interpreter.NewInterpreter(os.Stdout)
+	err = interpreter.Interpret(expression)
 
-	return nil
+	return
 }
 
 func RunFile(file string) error {
@@ -46,9 +40,6 @@ func RunFile(file string) error {
 }
 
 func RunPrompt() (err error) {
-	// fmt.Println("running prompt!")
-	// os.ReadLin
-	// return fmt.Errorf("Not implemented!")
 	fmt.Println("starting up lox version 0.0.0")
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Print("> ")
