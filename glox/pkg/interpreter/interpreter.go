@@ -311,3 +311,19 @@ func (i *Interpreter) VisitBinary(expr *ast.BinaryExpr) (result interface{}, err
 	}
 	return
 }
+
+func (i *Interpreter) VisitExpression(stmt *ast.ExpressionStmt) error {
+	// Appropriately enough, we discard the value returned by i.evaluate() by
+	// placing that call inside a Golang expression statement.
+	i.evaluate(stmt.Expression)
+	return nil
+}
+
+func (i *Interpreter) VisitPrint(stmt *ast.PrintStmt) error {
+	value, err := i.evaluate(stmt.Expression)
+	if err != nil {
+		return err
+	}
+	fmt.Println("%v", value)
+	return nil
+}

@@ -10,15 +10,13 @@ import (
 
 func TestParser_Parse(t *testing.T) {
 	tests := []struct {
-		name   string
-		tokens []*token.Token
-		// wantExpr []ast.Expr
-		// expected    string
-		expected    ast.Expr
+		name        string
+		tokens      []*token.Token
+		expected    []ast.Stmt
 		expectedErr error
 	}{
 		{
-			name: "binary expr: 1+2",
+			name: "simple_binary_expr",
 			tokens: []*token.Token{
 				{
 					TokenType: token.Number,
@@ -45,14 +43,18 @@ func TestParser_Parse(t *testing.T) {
 					Line:      1,
 				},
 			},
-			expected: &ast.BinaryExpr{
-				Left: &ast.LiteralExpr{Value: 1},
-				Operator: &token.Token{
-					TokenType: token.Plus,
-					Lexeme:    "+",
-					Line:      1,
+			expected: []ast.Stmt{
+				&ast.ExpressionStmt{
+					Expression: &ast.BinaryExpr{
+						Left: &ast.LiteralExpr{Value: 1},
+						Operator: &token.Token{
+							TokenType: token.Plus,
+							Lexeme:    "+",
+							Line:      1,
+						},
+						Right: &ast.LiteralExpr{Value: 2},
+					},
 				},
-				Right: &ast.LiteralExpr{Value: 2},
 			},
 		},
 		{
@@ -104,22 +106,26 @@ func TestParser_Parse(t *testing.T) {
 					Line:      1,
 				},
 			},
-			expected: &ast.BinaryExpr{
-				Left: &ast.LiteralExpr{Value: "asdf"},
-				Operator: &token.Token{
-					TokenType: token.LessEqual,
-					Lexeme:    "<=",
-					Line:      1,
-				},
-				Right: &ast.GroupingExpr{
+			expected: []ast.Stmt{
+				&ast.ExpressionStmt{
 					Expression: &ast.BinaryExpr{
-						Left: &ast.LiteralExpr{Value: 1},
+						Left: &ast.LiteralExpr{Value: "asdf"},
 						Operator: &token.Token{
-							TokenType: token.Plus,
-							Lexeme:    "+",
+							TokenType: token.LessEqual,
+							Lexeme:    "<=",
 							Line:      1,
 						},
-						Right: &ast.LiteralExpr{Value: 2},
+						Right: &ast.GroupingExpr{
+							Expression: &ast.BinaryExpr{
+								Left: &ast.LiteralExpr{Value: 1},
+								Operator: &token.Token{
+									TokenType: token.Plus,
+									Lexeme:    "+",
+									Line:      1,
+								},
+								Right: &ast.LiteralExpr{Value: 2},
+							},
+						},
 					},
 				},
 			},
@@ -152,14 +158,18 @@ func TestParser_Parse(t *testing.T) {
 					Line:      1,
 				},
 			},
-			expected: &ast.BinaryExpr{
-				Left: &ast.LiteralExpr{Value: "asdf"},
-				Operator: &token.Token{
-					TokenType: token.Plus,
-					Lexeme:    "+",
-					Line:      1,
+			expected: []ast.Stmt{
+				&ast.ExpressionStmt{
+					Expression: &ast.BinaryExpr{
+						Left: &ast.LiteralExpr{Value: "asdf"},
+						Operator: &token.Token{
+							TokenType: token.Plus,
+							Lexeme:    "+",
+							Line:      1,
+						},
+						Right: &ast.LiteralExpr{Value: "qwer"},
+					},
 				},
-				Right: &ast.LiteralExpr{Value: "qwer"},
 			},
 		},
 	}
@@ -174,6 +184,7 @@ func TestParser_Parse(t *testing.T) {
 				t.Errorf("Unexpected err:\nerror:\n%v\n", err)
 				return
 			}
+			assert.Equal(t, len(tc.expected), len(actual))
 			assert.Equal(t, tc.expected, actual)
 
 		})

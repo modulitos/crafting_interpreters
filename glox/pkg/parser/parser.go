@@ -73,6 +73,34 @@ func (p *Parser) consume(tokenType token.Type) (*token.Token, error) {
 
 // ----------------------------------------------------------------------------
 // Types
+func (p *Parser) statement() (stmt ast.Stmt, err error) {
+	if p.match(token.Print) {
+		return p.printStatement()
+	}
+	return p.expressionStatement()
+}
+
+func (p *Parser) printStatement() (stmt ast.Stmt, err error) {
+	value, err := p.expression()
+	if err != nil {
+		return
+	}
+	p.consume(token.Semicolon)
+	return &ast.PrintStmt{
+		Expression: value,
+	}, nil
+}
+
+func (p *Parser) expressionStatement() (stmt ast.Stmt, err error) {
+	expr, err := p.expression()
+	if err != nil {
+		return
+	}
+	p.consume(token.Semicolon)
+	return &ast.ExpressionStmt{
+		Expression: expr,
+	}, nil
+}
 
 func (p *Parser) expression() (expr ast.Expr, err error) {
 	return p.equality()
@@ -227,13 +255,20 @@ func (p *Parser) primary() (expr ast.Expr, err error) {
 	return
 }
 
-func (p *Parser) Parse() (expr ast.Expr, err error) {
-	expr, err = p.expression()
-	if err != nil {
-		err = ParserError{
-			err: err,
+// ----------------------------------------------------------------------------
+// Public API
+
+func (p *Parser) Parse() (statements []ast.Stmt, err error) {
+	statements = make([]ast.Stmt, 0)
+	for !p.isAtEnd() {
+		statement, statementErr := p.statement()
+		if statementErr != nil {
+			err = ParserError{
+				err: statementErr,
+			}
+			return
 		}
-		return
+		statements = append(statements, statement)
 	}
 	return
 }
