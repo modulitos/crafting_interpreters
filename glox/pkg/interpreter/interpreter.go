@@ -23,14 +23,16 @@ func NewInterpreter(writer io.Writer) *Interpreter {
 	}
 }
 
-func (i *Interpreter) Interpret(expr ast.Expr) error {
-	value, err := expr.Accept(i)
-	if err != nil {
-		return &RuntimeError{
-			msg: fmt.Sprintf("Interpreter failed exception: %v\n", err),
+func (i *Interpreter) Interpret(stmts []ast.Stmt) error {
+
+	for _, stmt := range stmts {
+		err := i.execute(stmt)
+		if err != nil {
+			return &RuntimeError{
+				msg: fmt.Sprintf("Interpreter failed exception: %v\n", err),
+			}
 		}
 	}
-	fmt.Fprintln(i.writer, i.stringify(value))
 	return nil
 }
 
@@ -122,6 +124,10 @@ func (i *Interpreter) stringify(val interface{}) string {
 
 // ----------------------------------------------------------------------------
 // Interpreter visitor
+
+func (i *Interpreter) execute(stmt ast.Stmt) error {
+	return stmt.Accept(i)
+}
 
 func (i *Interpreter) evaluate(expr ast.Expr) (result interface{}, err error) {
 	return expr.Accept(i)
@@ -324,6 +330,6 @@ func (i *Interpreter) VisitPrint(stmt *ast.PrintStmt) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("%v", value)
+	fmt.Fprintln(i.writer, i.stringify(value))
 	return nil
 }
