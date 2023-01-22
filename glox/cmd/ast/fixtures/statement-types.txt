@@ -1,0 +1,21 @@
+
+type StmtVisitor interface {
+	VisitExpression(e *ExpressionStmt) error
+	VisitPrint(e *PrintStmt) error
+}
+
+type ExpressionStmt struct {
+	Expression Expr
+}
+
+func (e *ExpressionStmt) Accept(visitor StmtVisitor) error {
+	return visitor.VisitExpression(e)
+}
+
+type PrintStmt struct {
+	Expression Expr
+}
+
+func (e *PrintStmt) Accept(visitor StmtVisitor) error {
+	return visitor.VisitPrint(e)
+}

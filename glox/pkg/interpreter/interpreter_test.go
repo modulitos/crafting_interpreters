@@ -90,6 +90,19 @@ func TestInterpreter(t *testing.T) {
 			expected: "1asdf\n",
 		},
 		{
+			name: "addition of number and string",
+			expr: &ast.BinaryExpr{
+				Left: &ast.LiteralExpr{Value: 1.0},
+				Operator: &token.Token{
+					TokenType: token.Plus,
+					Lexeme:    "+",
+					Line:      1,
+				},
+				Right: &ast.LiteralExpr{Value: true},
+			},
+			expectedErr: true,
+		},
+		{
 			name: "divide by 0",
 			expr: &ast.BinaryExpr{
 				Left: &ast.LiteralExpr{Value: 1.0},

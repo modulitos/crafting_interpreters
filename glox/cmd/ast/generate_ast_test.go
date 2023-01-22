@@ -25,12 +25,22 @@ func TestASTGenerator(t *testing.T) {
 		},
 		{
 			name:    "test type",
-			fixture: "type.txt",
+			fixture: "expression-types.txt",
 			doTest: func(g *generator) {
 				g.writeTypes([]string{
 					"Binary : Left Expr, Operator *token.Token, Right Expr",
 					"Grouping : Expression Expr",
-				})
+				}, expression)
+			},
+		},
+		{
+			name:    "test statement types",
+			fixture: "statement-types.txt",
+			doTest: func(g *generator) {
+				g.writeTypes([]string{
+					"Expression : Expression Expr",
+					"Print : Expression Expr",
+				}, statement)
 			},
 		},
 	}

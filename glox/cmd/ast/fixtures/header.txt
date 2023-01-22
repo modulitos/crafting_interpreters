@@ -10,3 +10,7 @@ import (
 type Expr interface {
 	Accept(visitor ExprVisitor) (result interface{}, err error)
 }
+
+type Stmt interface {
+	Accept(visitor StmtVisitor) error
+}

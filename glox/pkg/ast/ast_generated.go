@@ -11,6 +11,10 @@ type Expr interface {
 	Accept(visitor ExprVisitor) (result interface{}, err error)
 }
 
+type Stmt interface {
+	Accept(visitor StmtVisitor) error
+}
+
 type ExprVisitor interface {
 	VisitBinary(e *BinaryExpr) (result interface{}, err error)
 	VisitGrouping(e *GroupingExpr) (result interface{}, err error)
@@ -51,4 +55,25 @@ type UnaryExpr struct {
 
 func (e *UnaryExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
 	return visitor.VisitUnary(e)
+}
+
+type StmtVisitor interface {
+	VisitExpression(e *ExpressionStmt) error
+	VisitPrint(e *PrintStmt) error
+}
+
+type ExpressionStmt struct {
+	Expression Expr
+}
+
+func (e *ExpressionStmt) Accept(visitor StmtVisitor) error {
+	return visitor.VisitExpression(e)
+}
+
+type PrintStmt struct {
+	Expression Expr
+}
+
+func (e *PrintStmt) Accept(visitor StmtVisitor) error {
+	return visitor.VisitPrint(e)
 }

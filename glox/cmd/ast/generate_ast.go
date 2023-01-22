@@ -28,6 +28,10 @@ import (
 type Expr interface {
 	Accept(visitor ExprVisitor) (result interface{}, err error)
 }
+
+type Stmt interface {
+	Accept(visitor StmtVisitor) error
+}
 `))
 }
 
@@ -35,16 +39,35 @@ func (g *generator) linebreak() {
 	g.buf.WriteByte('\n')
 }
 
-func (g *generator) writeTypes(types []string) {
-	// TODO: parse types in a GrammarType struct so it's easier
+type exprType int
+
+const (
+	statement = exprType(iota)
+	expression
+)
+
+func (g *generator) writeTypes(types []string, kind exprType) {
+	var exprRepr string
+	var return_type string
+	if kind == statement {
+		exprRepr = "Stmt"
+		return_type = fmt.Sprintf("error")
+	} else {
+		exprRepr = "Expr"
+		return_type = fmt.Sprintf("(result interface{}, err error)")
+	}
+
+	// if kind == statement {
+	// } else {
+	// }
 
 	// write visitor
 	g.linebreak()
-	fmt.Fprintf(&g.buf, "type ExprVisitor interface {")
+	fmt.Fprintf(&g.buf, "type %sVisitor interface {", exprRepr)
 	g.linebreak()
 	for _, typestr := range types {
 		name := strings.TrimSpace(strings.Split(typestr, ":")[0])
-		fmt.Fprintf(&g.buf, "Visit%s(e *%sExpr) (result interface{}, err error)", name, name)
+		fmt.Fprintf(&g.buf, "Visit%s(e *%s%s) %s", name, name, exprRepr, return_type)
 		g.linebreak()
 	}
 	g.buf.Write([]byte("}\n"))
@@ -55,7 +78,7 @@ func (g *generator) writeTypes(types []string) {
 		fields := strings.Split(strings.Split(typestr, ":")[1], ",")
 
 		// Define the Expr struct:
-		fmt.Fprintf(&g.buf, "type %sExpr struct {", name)
+		fmt.Fprintf(&g.buf, "type %s%s struct {", name, exprRepr)
 		g.linebreak()
 		for _, field := range fields {
 			field := strings.TrimSpace(field)
@@ -68,7 +91,7 @@ func (g *generator) writeTypes(types []string) {
 		g.linebreak()
 
 		// implement the Accept method:
-		fmt.Fprintf(&g.buf, "func (e *%sExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {", name)
+		fmt.Fprintf(&g.buf, "func (e *%s%s) Accept(visitor %sVisitor) %s {", name, exprRepr, exprRepr, return_type)
 		g.linebreak()
 		fmt.Fprintf(&g.buf, "return visitor.Visit%s(e)", name)
 		g.linebreak()
@@ -110,11 +133,21 @@ func main() {
 	generator.writeHeader()
 
 	generator.writeTypes([]string{
+		// Sometimes assign is a statement, like in Go:
+		// "Assign : Token name, Expr value",
 		"Binary : Left Expr, Operator *token.Token, Right Expr",
 		"Grouping : Expression Expr",
 		"Literal : Value interface{}",
 		"Unary : Operator *token.Token, Right Expr",
-	})
+	}, expression)
+
+	generator.writeTypes([]string{
+		"Expression : Expression Expr",
+		"Print : Expression Expr",
+		// statements:
+		// "Block : List<Stmt> statements",
+		// todo: declaration statement
+	}, statement)
 
 	err = generator.format()
 	if err != nil {
