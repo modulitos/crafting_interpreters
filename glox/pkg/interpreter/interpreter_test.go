@@ -147,6 +147,39 @@ func TestInterpreterEvaluate(t *testing.T) {
 			},
 			expectedErr: true,
 		},
+		{
+			name: "declare a variable, then use it",
+			stmts: []ast.Stmt{
+				&ast.VarStmt{
+					Name: &token.Token{
+						TokenType: token.Identifier,
+						Lexeme:    "foo",
+						Line:      1,
+					},
+					Initializer: &ast.LiteralExpr{
+						Value: 2.0,
+					},
+				},
+				&ast.PrintStmt{
+					Expression: &ast.BinaryExpr{
+						Left: &ast.VariableExpr{
+							Name: &token.Token{
+								TokenType: token.Identifier,
+								Lexeme:    "foo",
+								Line:      1,
+							},
+						},
+						Operator: &token.Token{
+							TokenType: token.Plus,
+							Lexeme:    "+",
+							Line:      1,
+						},
+						Right: &ast.LiteralExpr{Value: 2.0},
+					},
+				},
+			},
+			expected: "4\n",
+		},
 	}
 
 	for _, tc := range tests {

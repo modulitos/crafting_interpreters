@@ -14,12 +14,14 @@ import (
 // Interpreter API
 
 type Interpreter struct {
-	writer io.Writer
+	writer      io.Writer
+	environment *environment // should this be a pointer?
 }
 
 func NewInterpreter(writer io.Writer) *Interpreter {
 	return &Interpreter{
-		writer: writer,
+		writer:      writer,
+		environment: newEnvironment(nil),
 	}
 }
 
@@ -34,18 +36,6 @@ func (i *Interpreter) Interpret(stmts []ast.Stmt) error {
 		}
 	}
 	return nil
-}
-
-// ----------------------------------------------------------------------------
-// RuntimerError support
-
-type RuntimeError struct {
-	msg   string
-	token *token.Token
-}
-
-func (e *RuntimeError) Error() string {
-	return fmt.Sprintf("Interpreter Runtime Error: %s\nToken: %v\n", e.msg, e.token)
 }
 
 // ----------------------------------------------------------------------------
@@ -332,4 +322,19 @@ func (i *Interpreter) VisitPrint(stmt *ast.PrintStmt) error {
 	}
 	fmt.Fprintln(i.writer, i.stringify(value))
 	return nil
+}
+
+func (i *Interpreter) VisitVar(stmt *ast.VarStmt) (err error) {
+	var value interface{}
+	if stmt.Initializer != nil {
+		value, err = i.evaluate(stmt.Initializer)
+	}
+	// We'll keep it simple and say that Lox sets a variable to nil if it isn’t
+	// explicitly initialized.
+	i.environment.define(stmt.Name.Lexeme, value)
+	return
+}
+
+func (i *Interpreter) VisitVariable(e *ast.VariableExpr) (result interface{}, err error) {
+	return i.environment.get(e.Name)
 }
