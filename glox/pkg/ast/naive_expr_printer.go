@@ -12,6 +12,16 @@ func (a *AstPrint) Print(e Expr) (result interface{}, err error) {
 	return e.Accept(a)
 }
 
+func (a *AstPrint) VisitAssign(e *AssignExpr) (result interface{}, err error) {
+	// TODO: DRY this by updating parenthesize to accept strings as well as
+	// expressions.
+	exprStr, err := e.Value.Accept(a)
+	if err != nil {
+		return "", fmt.Errorf("Failed to stringify expr: err: %w", err)
+	}
+	return fmt.Sprintf("(= %v %v", e.Name.Lexeme, exprStr.(string)), nil
+}
+
 func (a *AstPrint) VisitVariable(e *VariableExpr) (result interface{}, err error) {
 	return fmt.Sprintf("%v", e.Name.Literal), nil
 }

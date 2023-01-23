@@ -133,8 +133,7 @@ func main() {
 	generator.writeHeader()
 
 	generator.writeTypes([]string{
-		// Sometimes assign is a statement, like in Go:
-		// "Assign : Token name, Expr value",
+		"Assign : Name *token.Token, Value Expr",
 		"Binary : Left Expr, Operator *token.Token, Right Expr",
 		"Grouping : Expression Expr",
 		"Literal : Value interface{}",

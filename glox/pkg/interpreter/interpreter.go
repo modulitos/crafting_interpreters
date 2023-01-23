@@ -331,10 +331,19 @@ func (i *Interpreter) VisitVar(stmt *ast.VarStmt) (err error) {
 	}
 	// We'll keep it simple and say that Lox sets a variable to nil if it isn’t
 	// explicitly initialized.
-	i.environment.define(stmt.Name.Lexeme, value)
+	i.environment.define(stmt.Name, value)
 	return
 }
 
 func (i *Interpreter) VisitVariable(e *ast.VariableExpr) (result interface{}, err error) {
 	return i.environment.get(e.Name)
+}
+
+func (i *Interpreter) VisitAssign(e *ast.AssignExpr) (result interface{}, err error) {
+	result, err = i.evaluate(e.Value)
+	if err != nil {
+		return
+	}
+	i.environment.assign(e.Name, result)
+	return
 }

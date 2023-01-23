@@ -16,11 +16,21 @@ type Stmt interface {
 }
 
 type ExprVisitor interface {
+	VisitAssign(e *AssignExpr) (result interface{}, err error)
 	VisitBinary(e *BinaryExpr) (result interface{}, err error)
 	VisitGrouping(e *GroupingExpr) (result interface{}, err error)
 	VisitLiteral(e *LiteralExpr) (result interface{}, err error)
 	VisitUnary(e *UnaryExpr) (result interface{}, err error)
 	VisitVariable(e *VariableExpr) (result interface{}, err error)
+}
+
+type AssignExpr struct {
+	Name  *token.Token
+	Value Expr
+}
+
+func (e *AssignExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
+	return visitor.VisitAssign(e)
 }
 
 type BinaryExpr struct {

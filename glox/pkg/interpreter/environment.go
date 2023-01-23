@@ -18,14 +18,25 @@ func newEnvironment(parent *environment) *environment {
 	}
 }
 
-func (e *environment) define(name string, value interface{}) {
+func (e *environment) define(name *token.Token, value interface{}) {
 	// We have made one interesting semantic choice: When we add the key to the
 	// map, we don’t check to see if it’s already present.
 	//
 	// A variable statement doesn’t just define a new variable, it can also be
 	// used to redefine an existing variable. We could choose to make this an
 	// error instead, but that would interact poorly with the REPL.
-	e.values[name] = value
+	e.values[name.Lexeme] = value
+}
+
+// The only difference between `assign` and `define` is `assign` isn't allow to
+// create a new variable.
+func (e *environment) assign(name *token.Token, value interface{}) (err error) {
+	if _, exists := e.values[name.Lexeme]; exists {
+		e.values[name.Lexeme] = value
+	} else {
+		err = fmt.Errorf("Cannot assign undeclared variable: '%s'.", name.Lexeme)
+	}
+	return
 }
 
 func (e *environment) get(name *token.Token) (result interface{}, err error) {
@@ -36,8 +47,6 @@ func (e *environment) get(name *token.Token) (result interface{}, err error) {
 		// difficult, we'll defer the error to runtime. It's OK to refer to a
 		// variable before it's defined as long as you don't evaluate the
 		// reference.
-		return nil, &RuntimeError{
-			msg: fmt.Sprintf("Undefined variable: %s.\n", name.Lexeme),
-		}
+		return nil, fmt.Errorf("Undefined variable: %s.\n", name.Lexeme)
 	}
 }

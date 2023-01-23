@@ -165,7 +165,36 @@ func (p *Parser) expressionStatement() (stmt ast.Stmt, err error) {
 }
 
 func (p *Parser) expression() (expr ast.Expr, err error) {
-	return p.equality()
+	return p.assignment()
+}
+func (p *Parser) assignment() (expr ast.Expr, err error) {
+	expr, err = p.equality()
+	if err != nil {
+		return
+	}
+	if !p.match(token.Equal) {
+		return
+	}
+
+	equals := p.previous()
+	var rvalue ast.Expr
+	rvalue, err = p.assignment()
+	if err != nil {
+		err = fmt.Errorf("invalid rvalue %w", err)
+		return
+	}
+
+	if varExpr, ok := expr.(*ast.VariableExpr); ok {
+		expr = &ast.AssignExpr{
+			Name:  varExpr.Name,
+			Value: rvalue,
+		}
+		return
+	}
+
+	err = fmt.Errorf("Invalid assignment target for equals token, at line: %d", equals.Line)
+	return
+
 }
 
 func (p *Parser) equality() (expr ast.Expr, err error) {
