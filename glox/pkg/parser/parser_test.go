@@ -37,6 +37,12 @@ func TestParser_Parse(t *testing.T) {
 					Line:      1,
 				},
 				{
+					TokenType: token.Semicolon,
+					Lexeme:    ";",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
 					TokenType: token.Eof,
 					Lexeme:    "",
 					Literal:   nil,
@@ -100,6 +106,12 @@ func TestParser_Parse(t *testing.T) {
 					Line:      1,
 				},
 				{
+					TokenType: token.Semicolon,
+					Lexeme:    ";",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
 					TokenType: token.Eof,
 					Lexeme:    "",
 					Literal:   nil,
@@ -152,6 +164,12 @@ func TestParser_Parse(t *testing.T) {
 					Line:      1,
 				},
 				{
+					TokenType: token.Semicolon,
+					Lexeme:    ";",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
 					TokenType: token.Eof,
 					Lexeme:    "",
 					Literal:   nil,
@@ -169,6 +187,40 @@ func TestParser_Parse(t *testing.T) {
 						},
 						Right: &ast.LiteralExpr{Value: "qwer"},
 					},
+				},
+			},
+		},
+		{
+			name: "print statement",
+			tokens: []*token.Token{
+				{
+					TokenType: token.Print,
+					Lexeme:    "print",
+					Literal:   "asdf",
+					Line:      1,
+				},
+				{
+					TokenType: token.String,
+					Lexeme:    "qwer",
+					Literal:   "qwer",
+					Line:      1,
+				},
+				{
+					TokenType: token.Semicolon,
+					Lexeme:    ";",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
+					TokenType: token.Eof,
+					Lexeme:    "",
+					Literal:   nil,
+					Line:      1,
+				},
+			},
+			expected: []ast.Stmt{
+				&ast.PrintStmt{
+					Expression: &ast.LiteralExpr{Value: "qwer"},
 				},
 			},
 		},

@@ -85,7 +85,10 @@ func (p *Parser) printStatement() (stmt ast.Stmt, err error) {
 	if err != nil {
 		return
 	}
-	p.consume(token.Semicolon)
+	_, err = p.consume(token.Semicolon)
+	if err != nil {
+		return
+	}
 	return &ast.PrintStmt{
 		Expression: value,
 	}, nil
@@ -96,7 +99,10 @@ func (p *Parser) expressionStatement() (stmt ast.Stmt, err error) {
 	if err != nil {
 		return
 	}
-	p.consume(token.Semicolon)
+	_, err = p.consume(token.Semicolon)
+	if err != nil {
+		return
+	}
 	return &ast.ExpressionStmt{
 		Expression: expr,
 	}, nil
