@@ -19,13 +19,13 @@ func run(source []byte) (err error) {
 	}
 
 	parser := parser.Parser{Tokens: tokens}
-	_statments, err := parser.Parse()
+	statements, err := parser.Parse()
 	if err != nil {
 		return
 	}
 
-	_ := interpreter.NewInterpreter(os.Stdout)
-	// err = interpreter.Interpret(expression)
+	interpreter := interpreter.NewInterpreter(os.Stdout)
+	err = interpreter.Interpret(statements)
 
 	return
 }
