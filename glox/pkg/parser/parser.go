@@ -133,7 +133,34 @@ func (p *Parser) statement() (stmt ast.Stmt, err error) {
 	if p.match(token.Print) {
 		return p.printStatement()
 	}
+	if p.match(token.LeftBrace) {
+		var statements []ast.Stmt
+		statements, err = p.block()
+		if err != nil {
+			return
+		}
+		return &ast.BlockStmt{
+			Statements: statements,
+		}, nil
+	}
 	return p.expressionStatement()
+}
+
+func (p *Parser) block() (stmts []ast.Stmt, err error) {
+	for !p.check(token.RightBrace) && !p.isAtEnd() {
+		var stmt ast.Stmt
+		stmt, err = p.declaration()
+		if err != nil {
+			return
+		}
+		stmts = append(stmts, stmt)
+	}
+	_, err = p.consume(token.RightBrace)
+	if err != nil {
+		err = fmt.Errorf("expected '}' after block: %w", err)
+		return
+	}
+	return
 }
 
 func (p *Parser) printStatement() (stmt ast.Stmt, err error) {

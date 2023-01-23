@@ -276,6 +276,114 @@ func TestParser_Parse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "blocks",
+			tokens: []*token.Token{
+				{
+					TokenType: token.Var,
+					Lexeme:    "Var",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
+					TokenType: token.Identifier,
+					Lexeme:    "foo",
+					Literal:   "foo",
+					Line:      1,
+				},
+				{
+					TokenType: token.Equal,
+					Lexeme:    "=",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
+					TokenType: token.Number,
+					Lexeme:    "42",
+					Literal:   42,
+					Line:      1,
+				},
+				{
+					TokenType: token.Semicolon,
+					Lexeme:    ";",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
+					TokenType: token.LeftBrace,
+					Lexeme:    "{",
+					Literal:   nil,
+					Line:      2,
+				},
+				{
+					TokenType: token.Var,
+					Lexeme:    "Var",
+					Literal:   nil,
+					Line:      3,
+				},
+				{
+					TokenType: token.Identifier,
+					Lexeme:    "foo",
+					Literal:   "foo",
+					Line:      3,
+				},
+				{
+					TokenType: token.Equal,
+					Lexeme:    "=",
+					Literal:   nil,
+					Line:      3,
+				},
+				{
+					TokenType: token.Number,
+					Lexeme:    "42",
+					Literal:   42,
+					Line:      3,
+				},
+				{
+					TokenType: token.Semicolon,
+					Lexeme:    ";",
+					Literal:   nil,
+					Line:      3,
+				},
+				{
+					TokenType: token.RightBrace,
+					Lexeme:    "}",
+					Literal:   nil,
+					Line:      4,
+				},
+				{
+					TokenType: token.Eof,
+					Lexeme:    "",
+					Literal:   nil,
+					Line:      4,
+				},
+			},
+			expected: []ast.Stmt{
+				&ast.VarStmt{
+					Name: &token.Token{
+						TokenType: token.Identifier,
+						Literal:   "foo",
+						Lexeme:    "foo",
+						Line:      1,
+					},
+					Initializer: &ast.LiteralExpr{Value: 42},
+				},
+
+				&ast.BlockStmt{
+					Statements: []ast.Stmt{
+						&ast.VarStmt{
+							Name: &token.Token{
+								TokenType: token.Identifier,
+								Literal:   "foo",
+								Lexeme:    "foo",
+								Line:      3,
+							},
+							Initializer: &ast.LiteralExpr{Value: 42},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {

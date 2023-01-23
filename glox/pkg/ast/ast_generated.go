@@ -80,6 +80,7 @@ type StmtVisitor interface {
 	VisitExpression(e *ExpressionStmt) error
 	VisitPrint(e *PrintStmt) error
 	VisitVar(e *VarStmt) error
+	VisitBlock(e *BlockStmt) error
 }
 
 type ExpressionStmt struct {
@@ -105,4 +106,12 @@ type VarStmt struct {
 
 func (e *VarStmt) Accept(visitor StmtVisitor) error {
 	return visitor.VisitVar(e)
+}
+
+type BlockStmt struct {
+	Statements []Stmt
+}
+
+func (e *BlockStmt) Accept(visitor StmtVisitor) error {
+	return visitor.VisitBlock(e)
 }

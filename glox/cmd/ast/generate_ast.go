@@ -145,8 +145,7 @@ func main() {
 		"Expression : Expression Expr",
 		"Print : Expression Expr",
 		"Var : Name *token.Token, Initializer Expr", // Declaration statement
-		// statements:
-		// "Block : List<Stmt> statements",
+		"Block : Statements []Stmt",
 	}, statement)
 
 	err = generator.format()

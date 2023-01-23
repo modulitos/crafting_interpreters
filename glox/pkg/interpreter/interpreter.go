@@ -123,6 +123,22 @@ func (i *Interpreter) evaluate(expr ast.Expr) (result interface{}, err error) {
 	return expr.Accept(i)
 }
 
+func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *environment) (err error) {
+	previous := i.environment
+	i.environment = env
+	defer func() {
+		i.environment = previous
+	}()
+
+	for _, stmt := range stmts {
+		err = i.execute(stmt)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
 func (i *Interpreter) VisitLiteral(expr *ast.LiteralExpr) (result interface{}, err error) {
 	return expr.Value, nil
 }
@@ -345,5 +361,10 @@ func (i *Interpreter) VisitAssign(e *ast.AssignExpr) (result interface{}, err er
 		return
 	}
 	i.environment.assign(e.Name, result)
+	return
+}
+
+func (i *Interpreter) VisitBlock(stmt *ast.BlockStmt) (err error) {
+	err = i.executeBlock(stmt.Statements, newEnvironment(i.environment))
 	return
 }

@@ -34,6 +34,10 @@ func (e *environment) assign(name *token.Token, value interface{}) (err error) {
 	if _, exists := e.values[name.Lexeme]; exists {
 		e.values[name.Lexeme] = value
 	} else {
+		if e.parent != nil {
+			return e.parent.assign(name, value)
+		}
+
 		err = fmt.Errorf("Cannot assign undeclared variable: '%s'.", name.Lexeme)
 	}
 	return
@@ -43,6 +47,10 @@ func (e *environment) get(name *token.Token) (result interface{}, err error) {
 	if result, exists := e.values[name.Lexeme]; exists {
 		return result, nil
 	} else {
+		if e.parent != nil {
+			return e.parent.get(name)
+		}
+
 		// Since making it a static error makes recursive declarations too
 		// difficult, we'll defer the error to runtime. It's OK to refer to a
 		// variable before it's defined as long as you don't evaluate the
