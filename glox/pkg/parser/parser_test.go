@@ -224,6 +224,58 @@ func TestParser_Parse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "variable declaration",
+			tokens: []*token.Token{
+				{
+					TokenType: token.Var,
+					Lexeme:    "Var",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
+					TokenType: token.Identifier,
+					Lexeme:    "qwer",
+					Literal:   "qwer",
+					Line:      1,
+				},
+				{
+					TokenType: token.Equal,
+					Lexeme:    "=",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
+					TokenType: token.Number,
+					Lexeme:    "42",
+					Literal:   42,
+					Line:      1,
+				},
+				{
+					TokenType: token.Semicolon,
+					Lexeme:    ";",
+					Literal:   nil,
+					Line:      1,
+				},
+				{
+					TokenType: token.Eof,
+					Lexeme:    "",
+					Literal:   nil,
+					Line:      1,
+				},
+			},
+			expected: []ast.Stmt{
+				&ast.VarStmt{
+					Name: &token.Token{
+						TokenType: token.Identifier,
+						Literal:   "qwer",
+						Lexeme:    "qwer",
+						Line:      1,
+					},
+					Initializer: &ast.LiteralExpr{Value: 42},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {

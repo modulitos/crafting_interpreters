@@ -139,14 +139,15 @@ func main() {
 		"Grouping : Expression Expr",
 		"Literal : Value interface{}",
 		"Unary : Operator *token.Token, Right Expr",
+		"Variable : Name *token.Token",
 	}, expression)
 
 	generator.writeTypes([]string{
 		"Expression : Expression Expr",
 		"Print : Expression Expr",
+		"Var : Name *token.Token, Initializer Expr", // Declaration statement
 		// statements:
 		// "Block : List<Stmt> statements",
-		// todo: declaration statement
 	}, statement)
 
 	err = generator.format()

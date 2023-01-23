@@ -71,8 +71,64 @@ func (p *Parser) consume(tokenType token.Type) (*token.Token, error) {
 	}
 }
 
+// Discards tokens until it think it has found a statement boundary.
+func (p *Parser) synchronize() {
+	p.advance()
+
+	for !p.isAtEnd() {
+		if p.previous().TokenType == token.Semicolon {
+			return
+		}
+
+		switch p.peek().TokenType {
+		case token.Class, token.Fun, token.Var, token.For, token.If, token.While, token.Print, token.Return:
+			return
+		}
+
+		p.advance()
+	}
+}
+
 // ----------------------------------------------------------------------------
 // Types
+
+func (p *Parser) declaration() (stmt ast.Stmt, err error) {
+	defer func() {
+		if err != nil {
+			p.synchronize()
+			return
+		}
+	}()
+
+	if p.match(token.Var) {
+		return p.varDeclaration()
+	}
+	return p.statement()
+}
+
+func (p *Parser) varDeclaration() (stmt ast.Stmt, err error) {
+	name, err := p.consume(token.Identifier)
+	if err != nil {
+		return
+	}
+	var initializer ast.Expr
+	if p.match(token.Equal) {
+		initializer, err = p.expression()
+		if err != nil {
+			return
+		}
+	}
+
+	_, err = p.consume(token.Semicolon)
+	if err != nil {
+		return
+	}
+	return &ast.VarStmt{
+		Name:        name,
+		Initializer: initializer,
+	}, nil
+}
+
 func (p *Parser) statement() (stmt ast.Stmt, err error) {
 	if p.match(token.Print) {
 		return p.printStatement()
@@ -240,6 +296,12 @@ func (p *Parser) primary() (expr ast.Expr, err error) {
 		}
 		return
 	}
+	if p.match(token.Identifier) {
+		expr = &ast.VariableExpr{
+			Name: p.previous(),
+		}
+		return
+	}
 
 	if p.match(token.LeftParen) {
 		var groupingExpr ast.Expr
@@ -267,7 +329,7 @@ func (p *Parser) primary() (expr ast.Expr, err error) {
 func (p *Parser) Parse() (statements []ast.Stmt, err error) {
 	statements = make([]ast.Stmt, 0)
 	for !p.isAtEnd() {
-		statement, statementErr := p.statement()
+		statement, statementErr := p.declaration()
 		if statementErr != nil {
 			err = ParserError{
 				err: statementErr,

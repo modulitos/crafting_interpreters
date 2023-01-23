@@ -12,6 +12,10 @@ func (a *AstPrint) Print(e Expr) (result interface{}, err error) {
 	return e.Accept(a)
 }
 
+func (a *AstPrint) VisitVariable(e *VariableExpr) (result interface{}, err error) {
+	return fmt.Sprintf("%v", e.Name.Literal), nil
+}
+
 func (a *AstPrint) VisitBinary(e *BinaryExpr) (result interface{}, err error) {
 	return a.parenthesize(e.Operator.Lexeme, e.Left, e.Right)
 }
