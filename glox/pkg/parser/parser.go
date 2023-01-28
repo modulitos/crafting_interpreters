@@ -133,6 +133,9 @@ func (p *Parser) statement() (stmt ast.Stmt, err error) {
 	if p.match(token.If) {
 		return p.ifStatement()
 	}
+	if p.match(token.While) {
+		return p.whileStatement()
+	}
 	if p.match(token.Print) {
 		return p.printStatement()
 	}
@@ -181,6 +184,34 @@ func (p *Parser) ifStatement() (stmt ast.Stmt, err error) {
 		Condition:  expr,
 		ThenBranch: thenBranch,
 		ElseBranch: elseBranch,
+	}, nil
+}
+
+func (p *Parser) whileStatement() (stmt ast.Stmt, err error) {
+	_, err = p.consume(token.LeftParen)
+	if err != nil {
+		err = fmt.Errorf("expected '(' after if statement: %w", err)
+		return
+	}
+
+	expr, err := p.expression()
+	if err != nil {
+		return
+	}
+	_, err = p.consume(token.RightParen)
+	if err != nil {
+		err = fmt.Errorf("expected ')' after if condition: %w", err)
+		return
+	}
+
+	body, err := p.statement()
+	if err != nil {
+		return
+	}
+
+	return &ast.WhileStmt{
+		Condition: expr,
+		Body:      body,
 	}, nil
 }
 

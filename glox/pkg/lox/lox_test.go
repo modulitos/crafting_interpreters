@@ -69,6 +69,17 @@ else
 			source:   `print ("qwer" and "foo");`,
 			expected: "foo\n",
 		},
+		{
+			name: "while stmt",
+			source: `
+var x = 1;
+while (x < 3) {
+	print "x: " + x;
+	x = x + 1;
+}
+			`,
+			expected: "x: 1\nx: 2\n",
+		},
 	}
 
 	for _, tc := range tests {

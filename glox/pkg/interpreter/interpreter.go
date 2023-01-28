@@ -403,3 +403,22 @@ func (i *Interpreter) VisitLogical(stmt *ast.LogicalExpr) (result interface{}, e
 	}
 	return
 }
+
+func (i *Interpreter) VisitWhile(stmt *ast.WhileStmt) (err error) {
+	for {
+		var cond interface{}
+		cond, err = i.evaluate(stmt.Condition)
+		if err != nil {
+			return
+		}
+		if i.isTruthy(cond) {
+			err = i.execute(stmt.Body)
+			if err != nil {
+				return
+			}
+		} else {
+			break
+		}
+	}
+	return
+}
