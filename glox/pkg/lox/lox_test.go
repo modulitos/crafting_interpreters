@@ -49,6 +49,16 @@ global b
 global c
 `,
 		},
+		{
+			name: "if stmt",
+			source: `
+if (false)
+  print "ok";
+else
+  print "not ok";
+		`,
+			expected: "not ok\n",
+		},
 	}
 
 	for _, tc := range tests {

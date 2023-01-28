@@ -146,6 +146,7 @@ func main() {
 		"Print : Expression Expr",
 		"Var : Name *token.Token, Initializer Expr", // Declaration statement
 		"Block : Statements []Stmt",
+		"If : Condition Expr, ThenBranch Stmt, ElseBranch Stmt",
 	}, statement)
 
 	err = generator.format()

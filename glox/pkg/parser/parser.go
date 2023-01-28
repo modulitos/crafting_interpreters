@@ -130,6 +130,9 @@ func (p *Parser) varDeclaration() (stmt ast.Stmt, err error) {
 }
 
 func (p *Parser) statement() (stmt ast.Stmt, err error) {
+	if p.match(token.If) {
+		return p.ifStatement()
+	}
 	if p.match(token.Print) {
 		return p.printStatement()
 	}
@@ -144,6 +147,42 @@ func (p *Parser) statement() (stmt ast.Stmt, err error) {
 		}, nil
 	}
 	return p.expressionStatement()
+}
+func (p *Parser) ifStatement() (stmt ast.Stmt, err error) {
+	_, err = p.consume(token.LeftParen)
+	if err != nil {
+		err = fmt.Errorf("expected '(' after if statement: %w", err)
+		return
+	}
+	expr, err := p.expression()
+	if err != nil {
+		return
+	}
+
+	_, err = p.consume(token.RightParen)
+	if err != nil {
+		err = fmt.Errorf("expected ')' after if condition: %w", err)
+		return
+	}
+
+	thenBranch, err := p.statement()
+	if err != nil {
+		return
+	}
+	var elseBranch ast.Stmt
+	if p.match(token.Else) {
+		elseBranch, err = p.statement()
+		if err != nil {
+			return
+		}
+
+	}
+
+	return &ast.IfStmt{
+		Condition:  expr,
+		ThenBranch: thenBranch,
+		ElseBranch: elseBranch,
+	}, nil
 }
 
 func (p *Parser) block() (stmts []ast.Stmt, err error) {

@@ -368,3 +368,16 @@ func (i *Interpreter) VisitBlock(stmt *ast.BlockStmt) (err error) {
 	err = i.executeBlock(stmt.Statements, newEnvironment(i.environment))
 	return
 }
+
+func (i *Interpreter) VisitIf(stmt *ast.IfStmt) (err error) {
+	res, err := i.evaluate(stmt.Condition)
+	if err != nil {
+		return
+	}
+	if i.isTruthy(res) {
+		return i.execute(stmt.ThenBranch)
+	} else if stmt.ElseBranch != nil {
+		return i.execute(stmt.ElseBranch)
+	}
+	return
+}
