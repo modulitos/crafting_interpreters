@@ -175,7 +175,6 @@ func (p *Parser) ifStatement() (stmt ast.Stmt, err error) {
 		if err != nil {
 			return
 		}
-
 	}
 
 	return &ast.IfStmt{
@@ -234,7 +233,7 @@ func (p *Parser) expression() (expr ast.Expr, err error) {
 	return p.assignment()
 }
 func (p *Parser) assignment() (expr ast.Expr, err error) {
-	expr, err = p.equality()
+	expr, err = p.or()
 	if err != nil {
 		return
 	}
@@ -261,6 +260,48 @@ func (p *Parser) assignment() (expr ast.Expr, err error) {
 	err = fmt.Errorf("Invalid assignment target for equals token, at line: %d", equals.Line)
 	return
 
+}
+
+func (p *Parser) or() (expr ast.Expr, err error) {
+	expr, err = p.and()
+	if err != nil {
+		return
+	}
+	for p.match(token.Or) {
+		operator := p.previous()
+		var right ast.Expr
+		right, err = p.and()
+		if err != nil {
+			return
+		}
+		expr = &ast.LogicalExpr{
+			Left:     expr,
+			Operator: operator,
+			Right:    right,
+		}
+	}
+	return
+}
+
+func (p *Parser) and() (expr ast.Expr, err error) {
+	expr, err = p.equality()
+	if err != nil {
+		return
+	}
+	for p.match(token.And) {
+		operator := p.previous()
+		var right ast.Expr
+		right, err = p.equality()
+		if err != nil {
+			return
+		}
+		expr = &ast.LogicalExpr{
+			Left:     expr,
+			Operator: operator,
+			Right:    right,
+		}
+	}
+	return
 }
 
 func (p *Parser) equality() (expr ast.Expr, err error) {

@@ -59,6 +59,16 @@ else
 		`,
 			expected: "not ok\n",
 		},
+		{
+			name:     "or stmt",
+			source:   `print (false or "qwer");`,
+			expected: "qwer\n",
+		},
+		{
+			name:     "and stmt",
+			source:   `print ("qwer" and "foo");`,
+			expected: "foo\n",
+		},
 	}
 
 	for _, tc := range tests {

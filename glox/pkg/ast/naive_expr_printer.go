@@ -12,6 +12,10 @@ func (a *AstPrint) Print(e Expr) (result interface{}, err error) {
 	return e.Accept(a)
 }
 
+func (a *AstPrint) VisitLogical(e *LogicalExpr) (result interface{}, err error) {
+	return a.parenthesize(e.Operator.Lexeme, e.Left, e.Right)
+}
+
 func (a *AstPrint) VisitAssign(e *AssignExpr) (result interface{}, err error) {
 	// TODO: DRY this by updating parenthesize to accept strings as well as
 	// expressions.

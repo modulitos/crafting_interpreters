@@ -22,6 +22,7 @@ type ExprVisitor interface {
 	VisitLiteral(e *LiteralExpr) (result interface{}, err error)
 	VisitUnary(e *UnaryExpr) (result interface{}, err error)
 	VisitVariable(e *VariableExpr) (result interface{}, err error)
+	VisitLogical(e *LogicalExpr) (result interface{}, err error)
 }
 
 type AssignExpr struct {
@@ -74,6 +75,16 @@ type VariableExpr struct {
 
 func (e *VariableExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
 	return visitor.VisitVariable(e)
+}
+
+type LogicalExpr struct {
+	Left     Expr
+	Operator *token.Token
+	Right    Expr
+}
+
+func (e *LogicalExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
+	return visitor.VisitLogical(e)
 }
 
 type StmtVisitor interface {

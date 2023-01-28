@@ -381,3 +381,25 @@ func (i *Interpreter) VisitIf(stmt *ast.IfStmt) (err error) {
 	}
 	return
 }
+
+func (i *Interpreter) VisitLogical(stmt *ast.LogicalExpr) (result interface{}, err error) {
+	left, err := i.evaluate(stmt.Left)
+	if err != nil {
+		return
+	}
+	if stmt.Operator.TokenType == token.Or {
+		if i.isTruthy(left) {
+			return left, nil
+		}
+	} else {
+		if !i.isTruthy(left) {
+			return left, nil
+		}
+	}
+
+	result, err = i.evaluate(stmt.Right)
+	if err != nil {
+		return
+	}
+	return
+}

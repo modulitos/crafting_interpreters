@@ -139,6 +139,7 @@ func main() {
 		"Literal : Value interface{}",
 		"Unary : Operator *token.Token, Right Expr",
 		"Variable : Name *token.Token",
+		"Logical : Left Expr, Operator *token.Token, Right Expr",
 	}, expression)
 
 	generator.writeTypes([]string{
