@@ -130,6 +130,9 @@ func (p *Parser) varDeclaration() (stmt ast.Stmt, err error) {
 }
 
 func (p *Parser) statement() (stmt ast.Stmt, err error) {
+	if p.match(token.For) {
+		return p.forStatement()
+	}
 	if p.match(token.If) {
 		return p.ifStatement()
 	}
@@ -151,6 +154,91 @@ func (p *Parser) statement() (stmt ast.Stmt, err error) {
 	}
 	return p.expressionStatement()
 }
+
+func (p *Parser) forStatement() (stmt ast.Stmt, err error) {
+	_, err = p.consume(token.LeftParen)
+	if err != nil {
+		err = fmt.Errorf("expected '(' after if statement: %w", err)
+		return
+	}
+
+	var initializer ast.Stmt
+	if p.match(token.Semicolon) {
+		initializer = nil
+	} else if p.match(token.Var) {
+		initializer, err = p.varDeclaration()
+		if err != nil {
+			return
+		}
+	} else {
+		initializer, err = p.expressionStatement()
+		if err != nil {
+			return
+		}
+	}
+
+	var condition ast.Expr
+	if !p.check(token.Semicolon) {
+		condition, err = p.expression()
+		if err != nil {
+			return
+		}
+	}
+	_, err = p.consume(token.Semicolon)
+	if err != nil {
+		err = fmt.Errorf("expected ';' after condition: %w", err)
+		return
+	}
+
+	var increment ast.Expr
+	if !p.check(token.RightParen) {
+		increment, err = p.expression()
+		if err != nil {
+			return
+		}
+	}
+	_, err = p.consume(token.RightParen)
+	if err != nil {
+		err = fmt.Errorf("expected ')' after for loop conditions: %w", err)
+		return
+	}
+
+	body, err := p.statement()
+	if err != nil {
+		return
+	}
+	// We begin the de-sugaring:
+	if increment != nil {
+		body = &ast.BlockStmt{
+			Statements: []ast.Stmt{
+				body,
+				&ast.ExpressionStmt{
+					Expression: increment,
+				},
+			},
+		}
+	}
+
+	if condition == nil {
+		condition = &ast.LiteralExpr{Value: true}
+	}
+	body = &ast.WhileStmt{
+		Condition: condition,
+		Body:      body,
+	}
+
+	if initializer != nil {
+		body = &ast.BlockStmt{
+			Statements: []ast.Stmt{
+				initializer,
+				body,
+			},
+		}
+	}
+
+	return body, nil
+}
+
 func (p *Parser) ifStatement() (stmt ast.Stmt, err error) {
 	_, err = p.consume(token.LeftParen)
 	if err != nil {

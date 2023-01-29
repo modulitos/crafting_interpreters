@@ -80,6 +80,19 @@ while (x < 3) {
 			`,
 			expected: "x: 1\nx: 2\n",
 		},
+		{
+			name: "c-style for loops",
+			source: `
+var x = 0;
+var temp;
+for (var y = 1; y < 10; y = temp + y) {
+	print y;
+	temp = x;
+	x = y;
+}
+			`,
+			expected: "1\n1\n2\n3\n5\n8\n",
+		},
 	}
 
 	for _, tc := range tests {
