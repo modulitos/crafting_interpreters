@@ -18,8 +18,8 @@ func newEnvironment(parent *environment) *environment {
 	}
 }
 
-func newGlobalEnvironment(parent *environment) *environment {
-	env := newEnvironment(parent)
+func newGlobalEnvironment() *environment {
+	env := newEnvironment(nil)
 	env.define("clock", &nativeFuncClock{})
 
 	return env

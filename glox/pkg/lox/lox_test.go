@@ -111,6 +111,20 @@ sayHi("Dear", "Reader");
 `,
 			expected: "Hi, Dear Reader!\n",
 		},
+		{
+			name: "return statement",
+			source: `
+fun fibx(n) {
+	if (n <= 1) return n;
+	return fibx(n - 2) + fibx(n - 1);
+}
+
+for (var i = 0; i < 12; i = i + 1) {
+  print fibx(i);
+}
+`,
+			expected: "0\n1\n1\n2\n3\n5\n8\n13\n21\n34\n55\n89\n",
+		},
 	}
 
 	for _, tc := range tests {

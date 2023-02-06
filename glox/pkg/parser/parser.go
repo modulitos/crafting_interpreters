@@ -191,6 +191,14 @@ func (p *Parser) varDeclaration() (stmt ast.Stmt, err error) {
 	}, nil
 }
 
+// statement  → exprStmt
+//
+//	| forStmt
+//	| ifStmt
+//	| printStmt
+//	| returnStmt
+//	| whileStmt
+//	| block ;
 func (p *Parser) statement() (stmt ast.Stmt, err error) {
 	if p.match(token.For) {
 		return p.forStatement()
@@ -200,6 +208,9 @@ func (p *Parser) statement() (stmt ast.Stmt, err error) {
 	}
 	if p.match(token.While) {
 		return p.whileStatement()
+	}
+	if p.match(token.Return) {
+		return p.returnStatement()
 	}
 	if p.match(token.Print) {
 		return p.printStatement()
@@ -215,6 +226,28 @@ func (p *Parser) statement() (stmt ast.Stmt, err error) {
 		}, nil
 	}
 	return p.expressionStatement()
+}
+
+// returnStmt → "return" expression? ";" ;
+func (p *Parser) returnStatement() (stmt ast.Stmt, err error) {
+	keyword := p.previous()
+	var value ast.Expr
+	if !p.check(token.Semicolon) {
+		value, err = p.expression()
+		if err != nil {
+			return
+		}
+	}
+	_, err = p.consume(token.Semicolon)
+	if err != nil {
+		err = fmt.Errorf("Expect ; after return value: %w", err)
+		return
+	}
+	return &ast.ReturnStmt{
+		Keyword: keyword,
+		Value:   value,
+	}, nil
+
 }
 
 func (p *Parser) forStatement() (stmt ast.Stmt, err error) {

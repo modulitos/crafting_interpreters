@@ -20,7 +20,7 @@ type Interpreter struct {
 }
 
 func NewInterpreter(writer io.Writer) *Interpreter {
-	globals := newGlobalEnvironment(nil)
+	globals := newGlobalEnvironment()
 	// globals.define()
 	return &Interpreter{
 		writer:      writer,
@@ -470,4 +470,18 @@ func (i *Interpreter) VisitFunction(stmt *ast.FunctionStmt) (err error) {
 	}
 	i.environment.define(stmt.Name.Lexeme, function)
 	return nil
+}
+
+func (i *Interpreter) VisitReturn(stmt *ast.ReturnStmt) (err error) {
+	var value interface{}
+	if stmt.Value != nil {
+		value, err = i.evaluate(stmt.Value)
+		if err != nil {
+			return
+		}
+	}
+	// unwind the stack:
+	panic(&returnPayload{
+		Value: value,
+	})
 }

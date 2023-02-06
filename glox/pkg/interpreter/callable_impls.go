@@ -46,10 +46,32 @@ func (f *loxFunction) arity() int {
 func (f *loxFunction) call(interpreter *Interpreter, args []interface{}) (result interface{}, err error) {
 	// To support recursion, we create a new environment at each _call_, not at
 	// the function declaration.
-	environment := newEnvironment(interpreter.globals)
+	environment := newEnvironment(interpreter.environment)
 	for i := 0; i < len(f.declaration.Params); i++ {
 		environment.define(f.declaration.Params[i].Lexeme, args[i])
 	}
+
+	defer func() {
+		//  Inside a heavily recursive tree-walk interpreter, using exceptions
+		//  for flow control is the way to go. Since our own syntax tree
+		//  evaluation is so heavily tied to the call stack, we’re pressed to do
+		//  some heavyweight call stack manipulation occasionally, and
+		//  exceptions are a handy tool for that.
+		panicReason := recover()
+		if panicReason == nil {
+			return
+		}
+		returnValue, ok := panicReason.(*returnPayload)
+		if !ok {
+			panic(panicReason)
+		}
+		result = returnValue.Value
+	}()
+
 	err = interpreter.executeBlock(f.declaration.Body, environment)
 	return
+}
+
+type returnPayload struct {
+	Value interface{}
 }

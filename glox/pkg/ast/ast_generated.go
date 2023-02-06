@@ -101,6 +101,7 @@ func (e *CallExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
 type StmtVisitor interface {
 	VisitExpression(e *ExpressionStmt) error
 	VisitPrint(e *PrintStmt) error
+	VisitReturn(e *ReturnStmt) error
 	VisitVar(e *VarStmt) error
 	VisitBlock(e *BlockStmt) error
 	VisitFunction(e *FunctionStmt) error
@@ -122,6 +123,15 @@ type PrintStmt struct {
 
 func (e *PrintStmt) Accept(visitor StmtVisitor) error {
 	return visitor.VisitPrint(e)
+}
+
+type ReturnStmt struct {
+	Keyword *token.Token
+	Value   Expr
+}
+
+func (e *ReturnStmt) Accept(visitor StmtVisitor) error {
+	return visitor.VisitReturn(e)
 }
 
 type VarStmt struct {

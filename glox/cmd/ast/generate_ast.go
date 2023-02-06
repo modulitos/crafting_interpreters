@@ -146,6 +146,7 @@ func main() {
 	generator.writeTypes([]string{
 		"Expression : Expression Expr",
 		"Print : Expression Expr",
+		"Return : Keyword *token.Token, Value Expr",
 		"Var : Name *token.Token, Initializer Expr", // Declaration statement
 		"Block : Statements []Stmt",
 		"Function : Name *token.Token, Params []*token.Token, Body []Stmt",
