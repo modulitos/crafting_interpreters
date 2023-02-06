@@ -3,6 +3,7 @@ package lox
 import (
 	"bytes"
 	"io/ioutil"
+	"regexp"
 	"testing"
 
 	"github.com/modulitos/glox/pkg/interpreter"
@@ -14,6 +15,7 @@ func TestInterpreterIntegration(t *testing.T) {
 		name     string
 		source   string
 		expected string
+		regex    *regexp.Regexp
 	}{
 		{
 			name: "nested globals",
@@ -93,6 +95,22 @@ for (var y = 1; y < 10; y = temp + y) {
 			`,
 			expected: "1\n1\n2\n3\n5\n8\n",
 		},
+		{
+			name:   "native function",
+			source: `print clock();`,
+			regex:  regexp.MustCompile(`^\d+\.\d+\n$`),
+		},
+		{
+			name: "user-defined function",
+			source: `
+fun sayHi(first, last) {
+  print "Hi, " + first + " " + last + "!";
+}
+
+sayHi("Dear", "Reader");
+`,
+			expected: "Hi, Dear Reader!\n",
+		},
 	}
 
 	for _, tc := range tests {
@@ -117,7 +135,11 @@ for (var y = 1; y < 10; y = temp + y) {
 			actual := string(b)
 
 			// Then:
-			assert.Equal(t, tc.expected, actual)
+			if len(tc.expected) != 0 {
+				assert.Equal(t, tc.expected, actual)
+			} else {
+				assert.Regexp(t, tc.regex, actual)
+			}
 		})
 	}
 }

@@ -384,6 +384,78 @@ func TestParser_Parse(t *testing.T) {
 				},
 			},
 		},
+		{
+
+			name: `function: sayHi("Dear", "Reader");`,
+			tokens: []*token.Token{
+				{
+					TokenType: token.Identifier,
+					Lexeme:    "sayHi",
+					Literal:   "sayHi",
+				},
+				{
+					TokenType: token.LeftParen,
+					Lexeme:    "(",
+					Literal:   nil,
+				},
+				{
+					TokenType: token.String,
+					Lexeme:    "Dear",
+					Literal:   "Dear",
+				},
+				{
+					TokenType: token.Comma,
+					Lexeme:    ",",
+					Literal:   nil,
+				},
+				{
+					TokenType: token.String,
+					Lexeme:    "Reader",
+					Literal:   "Reader",
+				},
+				{
+					TokenType: token.RightParen,
+					Lexeme:    ")",
+					Literal:   nil,
+				},
+				{
+					TokenType: token.Semicolon,
+					Lexeme:    ";",
+					Literal:   nil,
+				},
+				{
+					TokenType: token.Eof,
+					Lexeme:    "",
+					Literal:   nil,
+				},
+			},
+			expected: []ast.Stmt{
+				&ast.ExpressionStmt{
+					Expression: &ast.CallExpr{
+						Callee: &ast.VariableExpr{
+							Name: &token.Token{
+								TokenType: token.Identifier,
+								Lexeme:    "sayHi",
+								Literal:   "sayHi",
+							},
+						},
+						Paren: &token.Token{
+							TokenType: token.RightParen,
+							Lexeme:    ")",
+							Literal:   nil,
+						},
+						Args: []ast.Expr{
+							&ast.LiteralExpr{
+								Value: "Dear",
+							},
+							&ast.LiteralExpr{
+								Value: "Reader",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {

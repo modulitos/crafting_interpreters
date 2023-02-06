@@ -140,6 +140,7 @@ func main() {
 		"Unary : Operator *token.Token, Right Expr",
 		"Variable : Name *token.Token",
 		"Logical : Left Expr, Operator *token.Token, Right Expr",
+		"Call : Callee Expr, Paren *token.Token, Args []Expr",
 	}, expression)
 
 	generator.writeTypes([]string{
@@ -147,6 +148,7 @@ func main() {
 		"Print : Expression Expr",
 		"Var : Name *token.Token, Initializer Expr", // Declaration statement
 		"Block : Statements []Stmt",
+		"Function : Name *token.Token, Params []*token.Token, Body []Stmt",
 		"If : Condition Expr, ThenBranch Stmt, ElseBranch Stmt",
 		"While : Condition Expr, Body Stmt",
 	}, statement)

@@ -16,12 +16,16 @@ import (
 type Interpreter struct {
 	writer      io.Writer
 	environment *environment // should this be a pointer?
+	globals     *environment
 }
 
 func NewInterpreter(writer io.Writer) *Interpreter {
+	globals := newGlobalEnvironment(nil)
+	// globals.define()
 	return &Interpreter{
 		writer:      writer,
-		environment: newEnvironment(nil),
+		environment: newEnvironment(globals),
+		globals:     globals,
 	}
 }
 
@@ -324,6 +328,43 @@ func (i *Interpreter) VisitBinary(expr *ast.BinaryExpr) (result interface{}, err
 	return
 }
 
+func (i *Interpreter) VisitCall(expr *ast.CallExpr) (result interface{}, err error) {
+	var callee interface{}
+	callee, err = i.evaluate(expr.Callee)
+	if err != nil {
+		return
+	}
+	var args []interface{}
+	for _, argExpr := range expr.Args {
+		var arg interface{}
+		arg, err = i.evaluate(argExpr)
+		if err != nil {
+			return
+		}
+		args = append(args, arg)
+	}
+	function, ok := callee.(Callable)
+	if !ok {
+		err = &RuntimeError{
+			msg:   fmt.Sprintf("Can only call functions and classes. Callee is unexpected type: %T", callee),
+			token: expr.Paren,
+		}
+		return
+	}
+	if len(args) != function.arity() {
+		err = &RuntimeError{
+			msg:   fmt.Sprintf("Expected %d arguments but got %d.", function.arity(), len(args)),
+			token: expr.Paren,
+		}
+		return
+	}
+	result, err = function.call(i, args)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (i *Interpreter) VisitExpression(stmt *ast.ExpressionStmt) error {
 	// Appropriately enough, we discard the value returned by i.evaluate() by
 	// placing that call inside a Golang expression statement.
@@ -347,7 +388,7 @@ func (i *Interpreter) VisitVar(stmt *ast.VarStmt) (err error) {
 	}
 	// We'll keep it simple and say that Lox sets a variable to nil if it isn’t
 	// explicitly initialized.
-	i.environment.define(stmt.Name, value)
+	i.environment.define(stmt.Name.Lexeme, value)
 	return
 }
 
@@ -421,4 +462,12 @@ func (i *Interpreter) VisitWhile(stmt *ast.WhileStmt) (err error) {
 		}
 	}
 	return
+}
+
+func (i *Interpreter) VisitFunction(stmt *ast.FunctionStmt) (err error) {
+	function := &loxFunction{
+		declaration: stmt,
+	}
+	i.environment.define(stmt.Name.Lexeme, function)
+	return nil
 }

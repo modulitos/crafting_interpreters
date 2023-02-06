@@ -12,6 +12,14 @@ func (a *AstPrint) Print(e Expr) (result interface{}, err error) {
 	return e.Accept(a)
 }
 
+func (a *AstPrint) VisitCall(e *CallExpr) (result interface{}, err error) {
+	exprStr, err := e.Callee.Accept(a)
+	if err != nil {
+		return "", fmt.Errorf("Failed to stringify expr: err: %w", err)
+	}
+	return a.parenthesize(exprStr.(string), e.Args...)
+}
+
 func (a *AstPrint) VisitLogical(e *LogicalExpr) (result interface{}, err error) {
 	return a.parenthesize(e.Operator.Lexeme, e.Left, e.Right)
 }

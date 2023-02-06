@@ -18,14 +18,21 @@ func newEnvironment(parent *environment) *environment {
 	}
 }
 
-func (e *environment) define(name *token.Token, value interface{}) {
+func newGlobalEnvironment(parent *environment) *environment {
+	env := newEnvironment(parent)
+	env.define("clock", &nativeFuncClock{})
+
+	return env
+}
+
+func (e *environment) define(name string, value interface{}) {
 	// We have made one interesting semantic choice: When we add the key to the
 	// map, we don’t check to see if it’s already present.
 	//
 	// A variable statement doesn’t just define a new variable, it can also be
 	// used to redefine an existing variable. We could choose to make this an
 	// error instead, but that would interact poorly with the REPL.
-	e.values[name.Lexeme] = value
+	e.values[name] = value
 }
 
 // The only difference between `assign` and `define` is `assign` isn't allow to

@@ -9,6 +9,8 @@ import (
 	"github.com/modulitos/glox/pkg/token"
 )
 
+const maxFuncArgCounts = 255
+
 type Parser struct {
 	Tokens  []*token.Token
 	current int
@@ -92,6 +94,7 @@ func (p *Parser) synchronize() {
 // ----------------------------------------------------------------------------
 // Types
 
+// declaration → funDecl | varDecl | statement;
 func (p *Parser) declaration() (stmt ast.Stmt, err error) {
 	defer func() {
 		if err != nil {
@@ -100,10 +103,69 @@ func (p *Parser) declaration() (stmt ast.Stmt, err error) {
 		}
 	}()
 
+	if p.match(token.Fun) {
+		return p.function("function")
+	}
 	if p.match(token.Var) {
 		return p.varDeclaration()
 	}
 	return p.statement()
+}
+
+// funDecl    → "fun" function ;
+// function   → IDENTIFIER "(" parameters? ")" block ;
+// parameters → IDENTIFIER ( "," IDENTIFIER )* ;
+func (p *Parser) function(kind string) (stmt ast.Stmt, err error) {
+	name, err := p.consume(token.Identifier)
+	if err != nil {
+		err = fmt.Errorf("Expect %s name: %w", kind, err)
+		return
+	}
+	_, err = p.consume(token.LeftParen)
+	if err != nil {
+		err = fmt.Errorf("Expect ( after %s name: %w", kind, err)
+		return
+	}
+
+	var params []*token.Token
+	if !p.check(token.RightParen) {
+		for {
+			if len(params) >= maxFuncArgCounts {
+				err = fmt.Errorf("Can't have more than 255 parameters.")
+				return
+			}
+			var param *token.Token
+			param, err = p.consume(token.Identifier)
+			if err != nil {
+				err = fmt.Errorf("Expect parameter name: %w.", err)
+				return
+			}
+			params = append(params, param)
+
+			if !p.match(token.Comma) {
+				break
+			}
+		}
+	}
+	_, err = p.consume(token.RightParen)
+	if err != nil {
+		err = fmt.Errorf("Expect ) after %s parameters: %w", kind, err)
+		return
+	}
+	_, err = p.consume(token.LeftBrace)
+	if err != nil {
+		err = fmt.Errorf("Expect { before %s body: %w", kind, err)
+		return
+	}
+	body, err := p.block()
+	if err != nil {
+		return
+	}
+	return &ast.FunctionStmt{
+		Name:   name,
+		Params: params,
+		Body:   body,
+	}, nil
 }
 
 func (p *Parser) varDeclaration() (stmt ast.Stmt, err error) {
@@ -509,6 +571,7 @@ func (p *Parser) factor() (expr ast.Expr, err error) {
 	return
 }
 
+// unary → ( "!" | "-" ) unary | call ;
 func (p *Parser) unary() (expr ast.Expr, err error) {
 	if p.match(token.Slash, token.Star) {
 		operator := p.previous()
@@ -523,7 +586,61 @@ func (p *Parser) unary() (expr ast.Expr, err error) {
 		}
 		return
 	}
-	return p.primary()
+	return p.call()
+}
+
+// call      → primary ( "(" arguments? ")" )* ;
+// arguments → expression ( "," expression )* ;
+func (p *Parser) call() (expr ast.Expr, err error) {
+	expr, err = p.primary()
+	if err != nil {
+		return
+	}
+	for {
+		if p.match(token.LeftParen) {
+			expr, err = p.finishCall(expr)
+			if err != nil {
+				return
+			}
+		} else {
+			break
+		}
+	}
+	return
+}
+
+func (p *Parser) finishCall(incoming ast.Expr) (expr ast.Expr, err error) {
+	var args []ast.Expr
+	if !p.check(token.RightParen) {
+		for {
+			if len(args) >= maxFuncArgCounts {
+				// Having a maximum number of arguments will simplify our bytecode interpreter
+				// in Part III. We want our two interpreters to be compatible with each other,
+				// even in weird corner cases like this, so we’ll add the same limit
+				err = fmt.Errorf("Can't have more than 255 arguments.")
+				return
+			}
+			var arg ast.Expr
+			arg, err = p.expression()
+			if err != nil {
+				return
+			}
+			args = append(args, arg)
+			if !p.match(token.Comma) {
+				break
+			}
+		}
+	}
+	paren, err := p.consume(token.RightParen)
+	if err != nil {
+		err = fmt.Errorf("expected ')' after arguments: %w", err)
+		return
+	}
+	return &ast.CallExpr{
+		Paren:  paren,
+		Callee: incoming,
+		Args:   args,
+	}, nil
 }
 
 func (p *Parser) primary() (expr ast.Expr, err error) {

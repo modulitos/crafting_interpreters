@@ -23,6 +23,7 @@ type ExprVisitor interface {
 	VisitUnary(e *UnaryExpr) (result interface{}, err error)
 	VisitVariable(e *VariableExpr) (result interface{}, err error)
 	VisitLogical(e *LogicalExpr) (result interface{}, err error)
+	VisitCall(e *CallExpr) (result interface{}, err error)
 }
 
 type AssignExpr struct {
@@ -87,11 +88,22 @@ func (e *LogicalExpr) Accept(visitor ExprVisitor) (result interface{}, err error
 	return visitor.VisitLogical(e)
 }
 
+type CallExpr struct {
+	Callee Expr
+	Paren  *token.Token
+	Args   []Expr
+}
+
+func (e *CallExpr) Accept(visitor ExprVisitor) (result interface{}, err error) {
+	return visitor.VisitCall(e)
+}
+
 type StmtVisitor interface {
 	VisitExpression(e *ExpressionStmt) error
 	VisitPrint(e *PrintStmt) error
 	VisitVar(e *VarStmt) error
 	VisitBlock(e *BlockStmt) error
+	VisitFunction(e *FunctionStmt) error
 	VisitIf(e *IfStmt) error
 	VisitWhile(e *WhileStmt) error
 }
@@ -127,6 +139,16 @@ type BlockStmt struct {
 
 func (e *BlockStmt) Accept(visitor StmtVisitor) error {
 	return visitor.VisitBlock(e)
+}
+
+type FunctionStmt struct {
+	Name   *token.Token
+	Params []*token.Token
+	Body   []Stmt
+}
+
+func (e *FunctionStmt) Accept(visitor StmtVisitor) error {
+	return visitor.VisitFunction(e)
 }
 
 type IfStmt struct {
