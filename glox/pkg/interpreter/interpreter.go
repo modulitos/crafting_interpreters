@@ -17,15 +17,18 @@ type Interpreter struct {
 	writer      io.Writer
 	environment *environment // should this be a pointer?
 	globals     *environment
+	locals      map[ast.Expr]int
 }
 
 func NewInterpreter(writer io.Writer) *Interpreter {
 	globals := newGlobalEnvironment()
-	// globals.define()
 	return &Interpreter{
-		writer:      writer,
-		environment: newEnvironment(globals),
-		globals:     globals,
+		writer: writer,
+		// Pointer to the current env, which can change as we traverse blocks:
+		environment: globals,
+		// Pointer to the global env:
+		globals: globals,
+		locals:  make(map[ast.Expr]int),
 	}
 }
 
@@ -116,6 +119,19 @@ func (i *Interpreter) stringify(val interface{}) string {
 
 }
 
+func (i *Interpreter) resolve(expr ast.Expr, depth int) {
+	i.locals[expr] = depth
+}
+
+func (i *Interpreter) lookupVariable(name *token.Token, expr ast.Expr) (interface{}, error) {
+	if distance, ok := i.locals[expr]; ok {
+		return i.environment.getAt(distance, name.Lexeme)
+	} else {
+		return i.globals.get(name)
+	}
+
+}
+
 // ----------------------------------------------------------------------------
 // Interpreter visitor
 
@@ -130,7 +146,9 @@ func (i *Interpreter) evaluate(expr ast.Expr) (result interface{}, err error) {
 func (i *Interpreter) executeBlock(stmts []ast.Stmt, env *environment) (err error) {
 	previous := i.environment
 	i.environment = env
+	i.environment.parent = previous
 	defer func() {
+		i.environment.parent = nil
 		i.environment = previous
 	}()
 
@@ -381,28 +399,37 @@ func (i *Interpreter) VisitPrint(stmt *ast.PrintStmt) error {
 	return nil
 }
 
-func (i *Interpreter) VisitVar(stmt *ast.VarStmt) (err error) {
+func (i *Interpreter) VisitVar(stmt *ast.VarStmt) error {
 	var value interface{}
+	var err error
 	if stmt.Initializer != nil {
 		value, err = i.evaluate(stmt.Initializer)
 	}
 	// We'll keep it simple and say that Lox sets a variable to nil if it isn’t
 	// explicitly initialized.
+	// how do we know whether to define this in the env or the global?
 	i.environment.define(stmt.Name.Lexeme, value)
-	return
+	return err
 }
 
-func (i *Interpreter) VisitVariable(e *ast.VariableExpr) (result interface{}, err error) {
-	return i.environment.get(e.Name)
+func (i *Interpreter) VisitVariable(e *ast.VariableExpr) (interface{}, error) {
+	return i.lookupVariable(e.Name, e)
 }
 
-func (i *Interpreter) VisitAssign(e *ast.AssignExpr) (result interface{}, err error) {
-	result, err = i.evaluate(e.Value)
+func (i *Interpreter) VisitAssign(e *ast.AssignExpr) (interface{}, error) {
+	result, err := i.evaluate(e.Value)
 	if err != nil {
-		return
+		return nil, err
 	}
-	i.environment.assign(e.Name, result)
-	return
+	if distance, ok := i.locals[e]; ok {
+		err := i.environment.assignAt(distance, e.Name.Lexeme, result)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		i.globals.values[e.Name.Lexeme] = result
+	}
+	return result, nil
 }
 
 func (i *Interpreter) VisitBlock(stmt *ast.BlockStmt) (err error) {

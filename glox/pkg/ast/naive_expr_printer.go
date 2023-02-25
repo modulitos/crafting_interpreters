@@ -34,7 +34,7 @@ func (a *AstPrint) VisitAssign(e *AssignExpr) (result interface{}, err error) {
 	return fmt.Sprintf("(= %v %v", e.Name.Lexeme, exprStr.(string)), nil
 }
 
-func (a *AstPrint) VisitVariable(e *VariableExpr) (result interface{}, err error) {
+func (a *AstPrint) VisitVariable(e *VariableExpr) (interface{}, error) {
 	return fmt.Sprintf("%v", e.Name.Literal), nil
 }
 

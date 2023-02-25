@@ -10,23 +10,26 @@ import (
 	"github.com/modulitos/glox/pkg/scanner"
 )
 
-func run(source []byte, interpreter *interpreter.Interpreter) (err error) {
+func run(source []byte, interpreterInstance *interpreter.Interpreter) error {
 	s := scanner.NewScanner(source)
 	tokens, err := s.ScanTokens()
 	if err != nil {
 		err = fmt.Errorf("Scanning tokens: %w", err)
-		return
+		return err
 	}
 
 	parser := parser.Parser{Tokens: tokens}
 	statements, err := parser.Parse()
 	if err != nil {
-		return
+		return err
 	}
 
-	err = interpreter.Interpret(statements)
-
-	return
+	resolver := interpreter.NewResolver(interpreterInstance)
+	err = resolver.ResolveStmts(statements)
+	if err != nil {
+		return err
+	}
+	return interpreterInstance.Interpret(statements)
 }
 
 func RunFile(file string) error {

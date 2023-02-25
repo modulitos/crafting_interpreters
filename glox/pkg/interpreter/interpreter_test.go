@@ -223,10 +223,18 @@ func TestInterpreterEvaluate(t *testing.T) {
 			buf := new(bytes.Buffer)
 			interpreter := NewInterpreter(buf)
 
+			resolver := NewResolver(interpreter)
+			if err := resolver.ResolveStmts(tc.stmts); err != nil {
+				t.Errorf("%v has an unexpected err when resolving statements:\nerror:\n%v\nexpectedErr:\n%v\n", tc.name, err, tc.expectedErr)
+
+				return
+
+			}
+
 			// When:
 			err := interpreter.Interpret(tc.stmts)
 			if (err != nil) != tc.expectedErr {
-				t.Errorf("%v has an unexpected err:\nerror:\n%v\nexpectedErr:\n%v\n", tc.name, err, tc.expectedErr)
+				t.Errorf("%v has an unexpected err while interpreting statements:\nerror:\n%v\nexpectedErr:\n%v\n", tc.name, err, tc.expectedErr)
 
 				return
 			}

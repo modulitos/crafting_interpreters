@@ -25,6 +25,8 @@ func newGlobalEnvironment() *environment {
 	return env
 }
 
+// api
+
 func (e *environment) define(name string, value interface{}) {
 	// We have made one interesting semantic choice: When we add the key to the
 	// map, we don’t check to see if it’s already present.
@@ -64,4 +66,31 @@ func (e *environment) get(name *token.Token) (result interface{}, err error) {
 		// reference.
 		return nil, fmt.Errorf("Undefined variable: %s.\n", name.Lexeme)
 	}
+}
+
+func (e *environment) getAt(distance int, name string) (interface{}, error) {
+	current := e
+	for i := 0; i < distance; i++ {
+		current = current.parent
+		if current == nil {
+			return nil, fmt.Errorf("non-existed env parent, searching for variable %q, want distance %d, current distance %d", name, distance, i)
+		}
+	}
+	if value, ok := current.values[name]; ok {
+		return value, nil
+	} else {
+		panic(fmt.Sprintf("Resolver/environment mismatch: unable to find variable %s in environment at distance %d", name, distance))
+	}
+}
+
+func (e *environment) assignAt(distance int, name string, value interface{}) error {
+	current := e
+	for i := 0; i < distance; i++ {
+		current = current.parent
+		if current == nil {
+			return fmt.Errorf("non-existed env parent, searching for variable %q, want distance %d, current distance %d", name, distance, i)
+		}
+	}
+	current.values[name] = value
+	return nil
 }
